@@ -40,10 +40,13 @@ app.jinja_env.auto_reload = True
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 # #28 CSRF: secret_key для session (генерится при первом запуске, сохраняется в settings)
 import secrets as _csrf_secrets
-try:
-    _sk = db._get_global_setting('flask_secret_key')
-except Exception:
-    _sk = None
+import os as _envos
+_sk = _envos.environ.get('FLASK_SECRET_KEY', '').strip()
+if not _sk:
+    try:
+        _sk = db._get_global_setting('flask_secret_key')
+    except Exception:
+        _sk = None
 if not _sk:
     _sk = _csrf_secrets.token_hex(32)
     try:
@@ -135,21 +138,28 @@ def _csrf_check():
         return
     origin = request.headers.get("Origin") or ""
     referer = request.headers.get("Referer") or ""
-    # 1) Origin в whitelist → OK
+    # 1) Origin в whitelist (localhost для dev)
     if origin in ALLOWED_ORIGINS:
         return
-    # 2) Referer начинается с whitelist → OK
+    # 2) Same-origin: динамически — работает на любом домене (Railway, Render, свой)
+    try:
+        host_url = request.host_url.rstrip("/")
+        if origin == host_url:
+            return
+        if referer.startswith(host_url + "/") or referer == host_url:
+            return
+    except Exception:
+        pass
+    # 3) Referer начинается с whitelist
     if any(referer.startswith(o + "/") for o in ALLOWED_ORIGINS) or any(referer == o for o in ALLOWED_ORIGINS):
         return
-    # 3) Запрос С САМОГО localhost (приложение разговаривает само с собой) → OK
-    # Это покрывает случаи: пустой Origin от same-origin fetch в некоторых браузерах,
-    # запросы изнутри сервера, тесты через curl с локалки.
+    # 4) С localhost (для curl-тестов и same-origin без Origin)
     remote = (request.remote_addr or "").strip()
     if remote in ("127.0.0.1", "::1", "localhost"):
         return
     app.logger.warning(
-        "CSRF: blocked %s %s (origin=%r, referer=%r, ip=%s)",
-        request.method, request.path, origin, referer, remote
+        "CSRF blocked %s %s (origin=%r, referer=%r, host=%r, ip=%s)",
+        request.method, request.path, origin, referer, request.host_url, remote
     )
     return jsonify({"ok": False, "error": "CSRF check failed"}), 403
 
