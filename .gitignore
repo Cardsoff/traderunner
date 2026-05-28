@@ -1,0 +1,38 @@
+# Pacemaker — .gitignore
+
+# === CRITICAL: secrets and user data — NEVER commit ===
+config.ini
+config.ini.backup-*
+.env
+.env.local
+planner.db
+planner.db-*
+planner.db.backup-*
+planner.db.backup-pacemaker-*
+planner-test.db
+last_sync_debug.json
+logs/
+
+# === Python ===
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+pytest-cache-files-*/
+.coverage
+htmlcov/
+
+# === IDE ===
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# === Old versions / personal notes (not for public repo) ===
+.audit-backup-*/
+2026-*-ауд
