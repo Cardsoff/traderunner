@@ -2,7 +2,7 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in Pacemaker, **please do NOT open a public GitHub issue**. Instead, email the maintainer directly so the issue can be patched before disclosure.
+If you discover a security vulnerability in TradeRunner, **please do NOT open a public GitHub issue**. Instead, email the maintainer directly so the issue can be patched before disclosure.
 
 **Contact:** human.artem@icloud.com
 
@@ -14,9 +14,9 @@ Please include:
 
 We aim to respond within 72 hours and ship a patch within 7 days for critical issues.
 
-## What Pacemaker Protects
+## What TradeRunner Protects
 
-Pacemaker is a **personal crypto trading journal** that can be self-hosted or deployed as a multi-user SaaS. We protect:
+TradeRunner is a **personal crypto trading journal** that can be self-hosted or deployed as a multi-user SaaS. We protect:
 
 - **User passwords**: hashed with Werkzeug PBKDF2-SHA256 (never stored in plaintext)
 - **Exchange API keys**: encrypted at rest using **Fernet (AES-128-CBC + HMAC-SHA256)**. The encryption key is **derived from the user's password via Argon2id** and only exists in the active session — never persisted to disk.
@@ -34,14 +34,14 @@ This is a deliberate trade-off to protect users from a malicious admin or a data
 
 ## Recommended Production Hardening
 
-When deploying Pacemaker:
+When deploying TradeRunner:
 
 1. **Use HTTPS only** (Railway/Render do this automatically)
-2. **Use read-only API keys** on exchanges (Pacemaker never needs trade/withdraw permissions)
+2. **Use read-only API keys** on exchanges (TradeRunner never needs trade/withdraw permissions)
 3. **Set a strong `FLASK_SECRET_KEY`** as an environment variable
 4. **Enable PostgreSQL with backups** (Railway includes automated daily backups)
 5. **Add Cloudflare** in front for DDoS protection and rate limiting
-6. **Rotate keys quarterly** — Pacemaker shows a reminder after 90 days
+6. **Rotate keys quarterly** — TradeRunner shows a reminder after 90 days
 
 ## Out of Scope
 

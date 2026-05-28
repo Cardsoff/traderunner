@@ -1,4 +1,4 @@
-# Contributing to Pacemaker
+# Contributing to TradeRunner
 
 Thank you for considering a contribution!
 
@@ -23,7 +23,7 @@ Thank you for considering a contribution!
 
 ## Adding a New Exchange
 
-Pacemaker currently supports Bitunix. To add another exchange:
+TradeRunner currently supports Bitunix. To add another exchange:
 
 1. Create `<exchange>_client.py` modeled after `bitunix_client.py`
 2. Implement: `get_equity()`, `get_trade_history(start_ms, end_ms)`, `get_open_positions()`
@@ -38,7 +38,7 @@ PRs that add new exchanges are very welcome.
 Open an issue with:
 - Steps to reproduce
 - Expected vs actual behavior
-- Pacemaker version (`git rev-parse HEAD`)
+- TradeRunner version (`git rev-parse HEAD`)
 - Python version, OS
 
 For security issues, see [SECURITY.md](SECURITY.md) — please **do not** post publicly.

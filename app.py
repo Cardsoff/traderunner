@@ -60,6 +60,31 @@ if not _sk:
         pass
 app.secret_key = _sk or 'dev-fallback-key'
 
+# === SECURITY: Secure cookies ===
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = True if _envos.environ.get('FLASK_SECRET_KEY') else False  # True на проде (есть env), False локально
+app.config['REMEMBER_COOKIE_HTTPONLY'] = True
+app.config['REMEMBER_COOKIE_SAMESITE'] = 'Lax'
+app.config['REMEMBER_COOKIE_SECURE'] = True if _envos.environ.get('FLASK_SECRET_KEY') else False
+
+# === Rate-limit на /login (защита от brute-force) ===
+from collections import defaultdict
+import time as _time_mod
+_LOGIN_ATTEMPTS = defaultdict(list)  # {ip: [timestamp, ...]}
+
+@app.before_request
+def _login_rate_limit():
+    if request.path == '/login' and request.method == 'POST':
+        ip = request.remote_addr or 'unknown'
+        now = _time_mod.time()
+        # Чистим попытки старше 15 минут
+        _LOGIN_ATTEMPTS[ip] = [t for t in _LOGIN_ATTEMPTS[ip] if now - t < 900]
+        if len(_LOGIN_ATTEMPTS[ip]) >= 5:
+            app.logger.warning(f"Rate-limit: blocked /login from {ip} ({len(_LOGIN_ATTEMPTS[ip])} attempts)")
+            return jsonify({"ok": False, "error": "Слишком много попыток. Подожди 15 минут."}), 429
+        _LOGIN_ATTEMPTS[ip].append(now)
+
 # === PACEMAKER v4.0: SQLAlchemy + Flask-Login + DATABASE_URL ===
 from flask import g, session, redirect, url_for
 from flask_login import LoginManager, current_user, login_required as _login_required

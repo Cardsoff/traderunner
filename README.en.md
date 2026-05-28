@@ -1,4 +1,4 @@
-# Pacemaker
+# TradeRunner
 
 > **Keep the pace. Reach your goal.**
 > An open-source crypto trading journal with zero-knowledge encryption.
@@ -21,8 +21,8 @@
 ## Quick start (local)
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/pacemaker.git
-cd pacemaker
+git clone https://github.com/YOUR_USERNAME/traderunner.git
+cd traderunner
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
@@ -31,7 +31,7 @@ python app.py
 
 Open `http://localhost:5000`, register, and connect your Bitunix API key.
 
-**Windows users:** double-click `ЗАПУСТИ_МЕНЯ_Pacemaker.bat` — it handles venv + install + launch.
+**Windows users:** double-click `ЗАПУСТИ_МЕНЯ_TradeRunner.bat` — it handles venv + install + launch.
 
 ## Deploy to Railway
 
@@ -57,7 +57,7 @@ See `.env.example` for all environment variables.
 
 See [SECURITY.md](SECURITY.md) for our security model, threat model, and how to report vulnerabilities.
 
-**Why AGPL?** If you fork Pacemaker and run it as a service, you must open-source your modifications. This protects the community from closed-source commercial forks while keeping the code free for personal use.
+**Why AGPL?** If you fork TradeRunner and run it as a service, you must open-source your modifications. This protects the community from closed-source commercial forks while keeping the code free for personal use.
 
 ## Roadmap
 
@@ -73,4 +73,4 @@ See [SECURITY.md](SECURITY.md) for our security model, threat model, and how to 
 
 ## Acknowledgments
 
-Built for traders by a trader. If Pacemaker helps you stay disciplined and reach your goal, consider starring the repo ⭐ or [sponsoring](https://github.com/sponsors/YOUR_USERNAME).
+Built for traders by a trader. If TradeRunner helps you stay disciplined and reach your goal, consider starring the repo ⭐ or [sponsoring](https://github.com/sponsors/YOUR_USERNAME).

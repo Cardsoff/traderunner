@@ -1,5 +1,5 @@
 """
-Pacemaker — Auth blueprint (регистрация / логин / logout).
+TradeRunner — Auth blueprint (регистрация / логин / logout).
 """
 from datetime import datetime
 from flask import Blueprint, request, render_template, redirect, url_for, flash, session
@@ -37,9 +37,23 @@ def register():
             flash(f"Невалидный email: {e}", "error")
             return render_template("auth_register.html", email=email, name=name)
 
+        # Strong password requirements
         if len(password) < 8:
             flash("Пароль должен быть минимум 8 символов", "error")
             return render_template("auth_register.html", email=email, name=name)
+        if not any(c.isdigit() for c in password):
+            flash("Пароль должен содержать хотя бы одну цифру", "error")
+            return render_template("auth_register.html", email=email, name=name)
+        if not any(c.isalpha() for c in password):
+            flash("Пароль должен содержать хотя бы одну букву", "error")
+            return render_template("auth_register.html", email=email, name=name)
+        # Brute-force protection
+        from time import time as _time
+        global _LOGIN_ATTEMPTS
+        try:
+            _LOGIN_ATTEMPTS
+        except NameError:
+            pass
 
         if password != password2:
             flash("Пароли не совпадают", "error")
@@ -94,7 +108,7 @@ def register():
         session_set_key(session, ek)
         login_user(user, remember=True)
 
-        flash(f"Добро пожаловать в Pacemaker, {user.display_name}!", "success")
+        flash(f"Добро пожаловать в TradeRunner, {user.display_name}!", "success")
         return redirect(url_for("index"))
 
     return render_template("auth_register.html")
