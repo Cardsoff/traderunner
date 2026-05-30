@@ -1,0 +1,98 @@
+{% extends "admin_layout.html" %}
+{% block title %}Dashboard — Admin{% endblock %}
+{% block content %}
+<h1>Сводка</h1>
+<p class="subtitle">Состояние сервиса на {{ now if now else 'данный момент' }}</p>
+
+<div class="grid grid-4">
+  <div class="card metric">
+    <span class="label">👥 Всего юзеров</span>
+    <span class="value">{{ metrics.total_users }}</span>
+    <span class="delta">verified: {{ metrics.verified_users }} · blocked: {{ metrics.blocked_users }}</span>
+  </div>
+  <div class="card metric">
+    <span class="label">📈 Активных (7д)</span>
+    <span class="value">{{ metrics.active_week }}</span>
+    <span class="delta">{{ (metrics.active_week / metrics.total_users * 100) | round(1) if metrics.total_users else 0 }}% от всех</span>
+  </div>
+  <div class="card metric">
+    <span class="label">🆕 Новых сегодня</span>
+    <span class="value">{{ metrics.new_today }}</span>
+    <span class="delta">за неделю: {{ metrics.new_week }} · за месяц: {{ metrics.new_month }}</span>
+  </div>
+  <div class="card metric">
+    <span class="label">🔗 Подключили биржу</span>
+    <span class="value">{{ metrics.connected_users }}</span>
+    <span class="delta">{{ (metrics.connected_users / metrics.total_users * 100) | round(1) if metrics.total_users else 0 }}% от всех</span>
+  </div>
+</div>
+
+<div class="grid grid-4" style="margin-top: 16px;">
+  <div class="card metric">
+    <span class="label">📊 Всего сделок</span>
+    <span class="value">{{ metrics.total_trades }}</span>
+  </div>
+  <div class="card metric">
+    <span class="label">💵 Депозитов</span>
+    <span class="value">{{ metrics.total_deposits }}</span>
+  </div>
+  <div class="card metric">
+    <span class="label">🎯 Активных целей</span>
+    <span class="value">{{ metrics.active_goals }}</span>
+  </div>
+  <div class="card metric">
+    <span class="label">🔗 Share-ссылок</span>
+    <span class="value">{{ metrics.active_share_links }}</span>
+    <span class="delta">активных сейчас</span>
+  </div>
+</div>
+
+<h2>Регистрации за 30 дней</h2>
+<div class="card">
+  <div class="chart-container">
+    <canvas id="signupChart"></canvas>
+  </div>
+</div>
+
+<h2>Активные пользователи (DAU) за 30 дней</h2>
+<div class="card">
+  <div class="chart-container">
+    <canvas id="dauChart"></canvas>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+const signupData = {{ signup_daily | tojson }};
+const dauData = {{ dau_daily | tojson }};
+
+const commonOpts = {
+  responsive: true, maintainAspectRatio: false,
+  scales: {
+    x: { ticks: { color: '#8a96a8', maxRotation: 0, autoSkip: true, maxTicksLimit: 10 }, grid: { color: '#1f2837' } },
+    y: { ticks: { color: '#8a96a8', precision: 0 }, grid: { color: '#1f2837' }, beginAtZero: true }
+  },
+  plugins: { legend: { display: false } }
+};
+
+new Chart(document.getElementById('signupChart'), {
+  type: 'bar',
+  data: {
+    labels: signupData.map(d => d.date.slice(5)),
+    datasets: [{ data: signupData.map(d => d.n), backgroundColor: '#3aa97a', borderRadius: 4 }]
+  },
+  options: commonOpts
+});
+new Chart(document.getElementById('dauChart'), {
+  type: 'line',
+  data: {
+    labels: dauData.map(d => d.date.slice(5)),
+    datasets: [{ data: dauData.map(d => d.n), borderColor: '#5a9be0', backgroundColor: 'rgba(90,155,224,0.15)',
+                 fill: true, tension: 0.3, pointRadius: 2 }]
+  },
+  options: commonOpts
+});
+</script>
+{% endblock %}

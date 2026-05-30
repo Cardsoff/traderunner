@@ -39,6 +39,12 @@
       </button>
     </div>
 
+    {% if current_user.is_authenticated and current_user.is_admin %}
+    <a href="/admin/" class="btn btn-ghost" title="Админ-панель" style="padding:6px 10px;text-decoration:none;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M12 1l3 6 6 .75-4.5 4.25L18 19l-6-3.5L6 19l1.5-7L3 7.75 9 7z"/></svg>
+    </a>
+    {% endif %}
+
     <form method="POST" action="/logout" style="margin:0;padding:0;">
       <button class="btn btn-ghost" type="submit" title="Выйти из аккаунта" style="padding:6px 10px;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -549,19 +555,4 @@
       💡 <b>Дата старта учёта</b>: с этой даты строится план и считается прогресс. Обычно — день когда начал торговать или открыл счёт.
     </div>
   </div>
-  <div class="modal-footer">
-    <button class="btn btn-ghost" id="goalOnbSkip">Пропустить</button>
-    <button class="btn btn-primary" id="goalOnbSave">Создать цель</button>
-  </div>
-</div></div>
-
-
-
-<canvas id="confettiCanvas" style="position:fixed; top:0; left:0; width:100vw; height:100vh; pointer-events:none; z-index:1000; display:none;"></canvas>
-
-
-<div class="toast" id="toast"></div>
-
-<script src="/static/app.js"></script>
-</body>
-</html>
+  <div class="modal

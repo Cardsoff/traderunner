@@ -1,5 +1,5 @@
 {% extends "auth_layout.html" %}
-{% block title %}Вход — Pacemaker{% endblock %}
+{% block title %}Вход — TradeRunner{% endblock %}
 {% block content %}
   <h1>Вход в аккаунт</h1>
   <form method="POST" action="{{ url_for('auth.login') }}">
@@ -11,9 +11,12 @@
       <label for="password">Пароль</label>
       <input type="password" id="password" name="password" required />
     </div>
-    <div class="checkbox-row">
-      <input type="checkbox" id="remember" name="remember" checked />
-      <label for="remember" style="margin: 0;">Запомнить меня</label>
+    <div class="checkbox-row" style="justify-content: space-between;">
+      <span style="display: flex; align-items: center; gap: 8px;">
+        <input type="checkbox" id="remember" name="remember" checked />
+        <label for="remember" style="margin: 0;">Запомнить меня</label>
+      </span>
+      <a href="{{ url_for('auth.forgot_password') }}" style="color: var(--accent); font-size: 12px; text-decoration: none;">Забыл пароль?</a>
     </div>
     <button type="submit" class="btn-primary">Войти</button>
   </form>

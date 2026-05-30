@@ -1,0 +1,42 @@
+{% extends "admin_layout.html" %}
+{% block title %}Audit log — Admin{% endblock %}
+{% block content %}
+<h1>Audit log</h1>
+<p class="subtitle">Всего записей: <b>{{ total }}</b>. Страница {{ page }} из {{ pages }}.</p>
+
+<form method="GET" class="filters">
+  <input type="text" name="user_id" placeholder="user_id (число)" value="{{ user_filter }}" style="max-width: 150px;">
+  <input type="text" name="action" placeholder="action (поиск)" value="{{ action_filter }}" style="max-width: 240px;">
+  <button type="submit" class="btn btn-primary">Применить</button>
+  {% if user_filter or action_filter %}
+  <a href="{{ url_for('admin.audit_log') }}" class="btn btn-ghost">Сброс</a>
+  {% endif %}
+</form>
+
+<div class="card" style="padding: 0;">
+<table>
+  <thead><tr><th>Время</th><th>Юзер</th><th>Action</th><th>Entity</th><th>Payload</th></tr></thead>
+  <tbody>
+    {% for a in audits %}
+    <tr>
+      <td class="small">{{ a.ts }}</td>
+      <td><a href="{{ url_for('admin.user_detail', uid=a.user_id) }}">{{ users.get(a.user_id, 'user#' ~ a.user_id) }}</a></td>
+      <td><span class="badge badge-info">{{ a.action }}</span></td>
+      <td>{{ a.entity or '—' }}{% if a.entity_id %} <span class="small">#{{ a.entity_id }}</span>{% endif %}</td>
+      <td class="small">{{ (a.payload or '')[:100] }}{% if a.payload and a.payload | length > 100 %}…{% endif %}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" style="text-align: center; color: var(--muted); padding: 32px;">Записей нет</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+{% if pages > 1 %}
+<div class="pagination">
+  {% if page > 1 %}<a href="{{ url_for('admin.audit_log', page=page-1, user_id=user_filter, action=action_filter) }}">←</a>{% endif %}
+  <span class="current">{{ page }} / {{ pages }}</span>
+  {% if page < pages %}<a href="{{ url_for('admin.audit_log', page=page+1, user_id=user_filter, action=action_filter) }}">→</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

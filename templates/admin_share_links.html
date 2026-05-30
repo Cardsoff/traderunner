@@ -1,0 +1,31 @@
+{% extends "admin_layout.html" %}
+{% block title %}Share links — Admin{% endblock %}
+{% block content %}
+<h1>Share links</h1>
+<p class="subtitle">Последние {{ total }} share-ссылок.</p>
+
+<div class="card" style="padding: 0;">
+<table>
+  <thead><tr><th>ID</th><th>Юзер</th><th>Токен</th><th>Создана</th><th>Истекает</th><th>Статус</th></tr></thead>
+  <tbody>
+    {% for l in links %}
+    <tr>
+      <td>{{ l.id }}</td>
+      <td><a href="{{ url_for('admin.user_detail', uid=l.user_id) }}">{{ l.user_email }}</a></td>
+      <td class="small"><code>{{ l.token }}</code></td>
+      <td class="small">{{ l.created_at }}</td>
+      <td class="small">{{ l.expires_at }}</td>
+      <td>
+        {% if l.status == 'active' %}<span class="badge badge-ok">active</span>
+        {% elif l.status == 'revoked' %}<span class="badge badge-err">revoked</span>
+        {% elif l.status == 'expired' %}<span class="badge badge-muted">expired</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6" style="text-align: center; color: var(--muted); padding: 32px;">Share-ссылок нет</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

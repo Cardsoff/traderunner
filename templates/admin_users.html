@@ -1,0 +1,69 @@
+{% extends "admin_layout.html" %}
+{% block title %}Юзеры — Admin{% endblock %}
+{% block content %}
+<h1>Юзеры</h1>
+<p class="subtitle">Всего: <b>{{ total }}</b>. Показано: {{ users | length }} (страница {{ page }} из {{ pages }})</p>
+
+<form method="GET" class="filters">
+  <input type="search" name="q" placeholder="🔍 Поиск по email..." value="{{ search }}" style="flex: 1; max-width: 360px;">
+  <select name="sort">
+    <option value="new" {% if sort == 'new' %}selected{% endif %}>Сначала новые</option>
+    <option value="old" {% if sort == 'old' %}selected{% endif %}>Сначала старые</option>
+    <option value="active" {% if sort == 'active' %}selected{% endif %}>Недавно активные</option>
+    <option value="inactive" {% if sort == 'inactive' %}selected{% endif %}>Давно не заходили</option>
+  </select>
+  <button type="submit" class="btn btn-primary">Применить</button>
+  {% if search or sort != 'new' %}
+    <a href="{{ url_for('admin.users_list') }}" class="btn btn-ghost">Сброс</a>
+  {% endif %}
+</form>
+
+<div class="card" style="padding: 0;">
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Email</th>
+      <th>Имя</th>
+      <th>Регистрация</th>
+      <th>Last login</th>
+      <th>Сделок</th>
+      <th>Статус</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for u in users %}
+    <tr>
+      <td>{{ u.id }}</td>
+      <td><a href="{{ url_for('admin.user_detail', uid=u.id) }}">{{ u.email }}</a></td>
+      <td>{{ u.display_name or '—' }}</td>
+      <td class="small">{{ u.created_at }}</td>
+      <td class="small">{{ u.last_login_at }}</td>
+      <td>{{ u.n_trades }}</td>
+      <td>
+        {% if u.is_admin %}<span class="badge badge-warn">admin</span>{% endif %}
+        {% if u.is_blocked %}<span class="badge badge-err">blocked</span>
+        {% elif u.email_verified %}<span class="badge badge-ok">verified</span>
+        {% else %}<span class="badge badge-muted">unverified</span>
+        {% endif %}
+      </td>
+      <td><a href="{{ url_for('admin.user_detail', uid=u.id) }}" class="btn btn-ghost">Открыть</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+{% if pages > 1 %}
+<div class="pagination">
+  {% if page > 1 %}
+    <a href="{{ url_for('admin.users_list', page=page-1, q=search, sort=sort) }}">←</a>
+  {% endif %}
+  <span class="current">{{ page }} / {{ pages }}</span>
+  {% if page < pages %}
+    <a href="{{ url_for('admin.users_list', page=page+1, q=search, sort=sort) }}">→</a>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

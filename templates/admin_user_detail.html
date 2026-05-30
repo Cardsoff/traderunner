@@ -1,0 +1,116 @@
+{% extends "admin_layout.html" %}
+{% block title %}{{ user.email }} — Admin{% endblock %}
+{% block content %}
+<p class="small"><a href="{{ url_for('admin.users_list') }}">← Все юзеры</a></p>
+<h1>{{ user.email }}</h1>
+<p class="subtitle">
+  ID: {{ user.id }} · {{ user.display_name or 'без имени' }} ·
+  {% if user.is_admin %}<span class="badge badge-warn">admin</span>{% endif %}
+  {% if user.is_blocked %}<span class="badge badge-err">blocked</span>
+  {% elif user.email_verified %}<span class="badge badge-ok">verified</span>
+  {% else %}<span class="badge badge-muted">unverified</span>
+  {% endif %}
+  {% if user.api_connected %}<span class="badge badge-info">биржа подключена</span>{% endif %}
+</p>
+
+<div class="grid grid-3">
+  <div class="card metric">
+    <span class="label">Регистрация</span>
+    <span class="value" style="font-size: 16px;">{{ user.created_at }}</span>
+  </div>
+  <div class="card metric">
+    <span class="label">Последний логин</span>
+    <span class="value" style="font-size: 16px;">{{ user.last_login_at }}</span>
+  </div>
+  <div class="card metric">
+    <span class="label">Email</span>
+    <span class="value" style="font-size: 16px;">{{ user.email }}</span>
+  </div>
+</div>
+
+<div class="grid grid-4" style="margin-top: 16px;">
+  <div class="card metric">
+    <span class="label">Сделок</span>
+    <span class="value">{{ user.n_trades }}</span>
+  </div>
+  <div class="card metric">
+    <span class="label">Депозитов</span>
+    <span class="value">{{ user.n_deposits }}</span>
+  </div>
+  <div class="card metric">
+    <span class="label">Целей</span>
+    <span class="value">{{ user.n_goals }}</span>
+  </div>
+  <div class="card metric">
+    <span class="label">Share-ссылок</span>
+    <span class="value">{{ user.n_share }}</span>
+  </div>
+</div>
+
+<h2>🛠 Действия</h2>
+<div class="card" style="display: flex; gap: 12px; flex-wrap: wrap;">
+  {% set form_attrs = 'method="POST" action="' ~ url_for('admin.user_action', uid=user.id) ~ '" style="display:inline"' %}
+
+  {% if not user.email_verified %}
+  <form {{ form_attrs | safe }}>
+    <input type="hidden" name="action" value="verify_email">
+    <button type="submit" class="btn btn-ghost">✓ Пометить verified</button>
+  </form>
+  <form {{ form_attrs | safe }}>
+    <input type="hidden" name="action" value="resend_verification">
+    <button type="submit" class="btn btn-ghost">✉ Отправить verification ещё раз</button>
+  </form>
+  {% endif %}
+
+  {% if user.is_blocked %}
+  <form {{ form_attrs | safe }}>
+    <input type="hidden" name="action" value="unblock">
+    <button type="submit" class="btn btn-primary">Разблокировать</button>
+  </form>
+  {% else %}
+    {% if user.id != current_user.id %}
+    <form {{ form_attrs | safe }} onsubmit="return confirm('Точно заблокировать {{ user.email }}?')">
+      <input type="hidden" name="action" value="block">
+      <button type="submit" class="btn btn-danger">Заблокировать</button>
+    </form>
+    {% endif %}
+  {% endif %}
+
+  {% if user.is_admin %}
+    {% if user.id != current_user.id %}
+    <form {{ form_attrs | safe }} onsubmit="return confirm('Снять админ-права с {{ user.email }}?')">
+      <input type="hidden" name="action" value="demote">
+      <button type="submit" class="btn btn-ghost">Снять админ-права</button>
+    </form>
+    {% endif %}
+  {% else %}
+  <form {{ form_attrs | safe }} onsubmit="return confirm('Сделать {{ user.email }} админом?')">
+    <input type="hidden" name="action" value="make_admin">
+    <button type="submit" class="btn btn-ghost">Сделать админом</button>
+  </form>
+  {% endif %}
+</div>
+
+<h2>Последние действия ({{ user.n_audit }} всего, показаны 20 последних)</h2>
+<div class="card" style="padding: 0;">
+<table>
+  <thead><tr><th>Время</th><th>Action</th><th>Entity</th><th>Payload</th></tr></thead>
+  <tbody>
+    {% for a in audits %}
+    <tr>
+      <td class="small">{{ a.ts }}</td>
+      <td><span class="badge badge-info">{{ a.action }}</span></td>
+      <td>{{ a.entity or '—' }}{% if a.entity_id %} <span class="small">#{{ a.entity_id }}</span>{% endif %}</td>
+      <td class="small">{{ (a.payload or '')[:80] }}{% if a.payload and a.payload | length > 80 %}…{% endif %}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" style="text-align: center; color: var(--muted); padding: 32px;">Действий пока нет</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+
+<p class="small" style="margin-top: 24px;">
+  🔐 API-ключи биржи зашифрованы паролем юзера (zero-knowledge). Даже админ их не может прочитать.
+</p>
+{% endblock %}
