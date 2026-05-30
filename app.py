@@ -1462,6 +1462,8 @@ def api_credentials():
         "api_secret": "***" if api_connected else "",
         "age_days": None,
         "rotate_recommended": False,
+        # sec-fix 2026-05-30: фронт нужно знать, можем ли мы шифровать (есть ли ek в session)
+        "ek_available": bool(fk),
     })
 
 
@@ -2826,9 +2828,4 @@ if __name__ == "__main__":
     print("  Open: http://localhost:5000/login")
     print("  Logs:", str(LOGS_DIR / "app.log"))
     print("=" * 60)
-    # v4.0: scheduler отключён (см. start_scheduler)
-    try:
-        start_scheduler()
-    except Exception:
-        pass
-    app.run(host="127.0.0.1", port=5000, debug=False)
+    # v4.0: schedul
