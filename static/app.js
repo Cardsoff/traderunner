@@ -1304,6 +1304,14 @@ let _credsConnected = false;
 $('#apiStatus').addEventListener('click', async () => {
   const r = await api.get('/api/credentials');
   _credsConnected = !!r.api_connected;
+  // sec-fix 2026-05-30: если encryption_key пропал (Remember-me cookie без re-login)
+  // — сразу предупреждаем юзера ДО того как он попытается сохранить
+  if (r.ek_available === false) {
+    if (confirm('⚠ Чтобы подключить или изменить ключи биржи, нужно войти заново с паролем (zero-knowledge защита: без пароля сервер не может зашифровать твои ключи).\n\nПерейти на /login?')) {
+      window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname);
+    }
+    return;
+  }
   $('#credExchange').value = r.exchange || 'bitunix';
   // ВАЖНО: НЕ показываем ключ в открытом виде, только маску снизу
   $('#credApiKey').value = '';
@@ -1335,11 +1343,35 @@ $('#saveCredsBtn').addEventListener('click', async () => {
     toast('Нужны оба поля: api_key и api_secret', 'error');
     return;
   }
-  const r = await api.post('/api/credentials', {
-    exchange: $('#credExchange').value,
-    api_key: newKey,
-    api_secret: newSec,
-  });
+  // sec-fix 2026-05-30: проверяем response.ok чтобы не показывать "сохранено" при ошибке
+  let r;
+  try {
+    const resp = await fetch('/api/credentials', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        exchange: $('#credExchange').value,
+        api_key: newKey,
+        api_secret: newSec,
+      }),
+      credentials: 'include',
+    });
+    r = await resp.json();
+    if (resp.status === 401) {
+      // Сессия есть (Flask-Login), но encryption_key пропал — нужен реальный пароль
+      $('#credentialsModal').classList.remove('open');
+      toast('⚠ Сессия истекла. Войди заново с паролем чтобы сохранить ключи (zero-knowledge защита).', 'error');
+      setTimeout(() => { window.location.href = '/login?next=' + encodeURIComponent(window.location.pathname); }, 2500);
+      return;
+    }
+    if (!resp.ok || !r.ok) {
+      toast('Ошибка сохранения: ' + (r.error || `HTTP ${resp.status}`), 'error');
+      return;
+    }
+  } catch (e) {
+    toast('Ошибка сети: ' + e.message, 'error');
+    return;
+  }
   $('#credentialsModal').classList.remove('open');
   await loadAll();
   toast('✓ Ключи сохранены' + (r.auto_sync && r.auto_sync.ok ? `, синхронизация: +${r.auto_sync.added||0} сделок` : ''), 'success');
@@ -3003,55 +3035,4 @@ function fireConfetti() {
     const inp = document.createElement('input');
     inp.type = 'text';
     inp.className = 'trade-note-input';
-    inp.value = oldText;
-    td.innerHTML = '';
-    td.appendChild(inp);
-    inp.focus();
-    inp.select();
-    const save = async () => {
-      const newText = inp.value;
-      if (newText === oldText) {
-        td.textContent = oldText;
-        return;
-      }
-      try {
-        await fetch('/api/trades/' + tradeId, {
-          method: 'PATCH',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({ note: newText }),
-        });
-        td.textContent = newText;
-        toast('✓ Заметка обновлена', 'success', 1500);
-      } catch (err) {
-        td.textContent = oldText;
-        toast('✗ Не удалось обновить', 'error');
-      }
-    };
-    inp.addEventListener('blur', save);
-    inp.addEventListener('keydown', ev => {
-      if (ev.key === 'Enter') inp.blur();
-      if (ev.key === 'Escape') { td.textContent = oldText; }
-    });
-  });
-})();
-
-// === #27: Напоминание ротировать ключи (>90 дней) ===
-(function rotateKeysReminder() {
-  async function check() {
-    try {
-      const c = await fetch('/api/credentials').then(r => r.json());
-      if (c.rotate_recommended) {
-        const pill = document.getElementById('apiStatus');
-        if (pill && !pill.querySelector('.rotate-warning')) {
-          const warn = document.createElement('span');
-          warn.className = 'rotate-warning';
-          warn.textContent = '⏰ старше ' + c.age_days + ' дн';
-          warn.title = 'Рекомендуется перевыпустить API-ключи на бирже (старше 90 дней)';
-          pill.appendChild(warn);
-        }
-      }
-    } catch (e) {}
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', check);
-  else check();
-})();
+    inp.value = oldTe
