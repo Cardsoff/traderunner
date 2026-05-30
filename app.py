@@ -132,10 +132,20 @@ from flask_login import LoginManager, current_user, login_required as _login_req
 from models import db as orm_db, User, ShareLink
 
 import os as _os
-_db_url = _os.environ.get('DATABASE_URL', f"sqlite:///{(APP_DIR / 'planner.db').as_posix()}")
+# КРИТИЧНО (sec-fix 2026-05-30 #3): SQLAlchemy теперь использует тот же путь что legacy database.py.
+# Раньше использовал APP_DIR/planner.db (эфемерный /app/planner.db в контейнере)
+# и при каждом ребилде юзеры терялись. Теперь — PACEMAKER_DB (на volume).
+_pacemaker_db = _os.environ.get('PACEMAKER_DB', '').strip()
+_db_url = _os.environ.get('DATABASE_URL', '').strip()
+if not _db_url:
+    if _pacemaker_db:
+        _db_url = f"sqlite:///{_pacemaker_db}"
+    else:
+        _db_url = f"sqlite:///{(APP_DIR / 'planner.db').as_posix()}"
 if _db_url.startswith('postgres://'):
     _db_url = _db_url.replace('postgres://', 'postgresql://', 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = _db_url
+app.logger.info("DB URI: %s", _db_url[:80])
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 orm_db.init_app(app)
 
