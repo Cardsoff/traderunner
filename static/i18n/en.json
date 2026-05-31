@@ -1,7 +1,8 @@
 {
   "brand": {
     "name": "TradeRunner",
-    "tagline": "Run toward your goal. Count every trade"
+    "tagline": "Run toward your goal. Count every trade",
+    "tagline_auth": "Journal and analytics for your crypto trades"
   },
   "header": {
     "sync": "Sync",
@@ -23,11 +24,24 @@
     "target": "Target",
     "progress": "Progress",
     "forecast": "Forecast {0} — in {1} months",
-    "remaining": "{0} remaining",
+    "remaining": "Remaining",
     "no_data": "Waiting for data",
     "history": "Goal history",
     "set_goal": "Set a goal",
-    "edit_goal": "Edit goal"
+    "edit_goal": "Edit goal",
+    "achieved_title": "Goal achieved!",
+    "achieved_sub": "Lock the win — archive and set a new one",
+    "archive_new": "Archive & new goal",
+    "progress_label": "progress",
+    "name": "Name",
+    "name_placeholder": "e.g. first deposit ×100",
+    "amount": "Target amount ($)",
+    "return_per_month": "Planned return (%/mo)",
+    "monthly_deposit": "Monthly deposit ($)",
+    "monthly_deposit_hint": "— counted in the goal forecast",
+    "history_sub": "Goal history: active and achieved",
+    "delete_confirm": "Trades and deposits will be kept. Goal progress will reset — we'll create an empty one.",
+    "no_name": "No name"
   },
   "equity": {
     "title": "Equity growth",
@@ -37,7 +51,11 @@
     "drawdown_title": "Equity curve · daily",
     "drawdown_desc": "Daily balance and drawdown within the active goal",
     "equity": "Equity",
-    "drawdown_pct": "Drawdown %"
+    "drawdown_pct": "Drawdown %",
+    "growth": "Equity growth",
+    "monthly_yield": "Monthly return %",
+    "curve_title": "📈 Equity curve · daily",
+    "curve_sub": "Daily balance and drawdown within the active goal"
   },
   "trades": {
     "history": "Trade history",
@@ -59,7 +77,14 @@
     "note_placeholder": "Add a note…",
     "delete": "Delete",
     "no_trades": "No trades yet",
-    "delete_confirm": "Delete this trade?"
+    "delete_confirm": "Delete this trade?",
+    "col_pair": "Pair",
+    "col_side_short": "Side",
+    "col_source": "Source",
+    "filter_setup": "Filter by setup:",
+    "no_match": "Nothing matched the query",
+    "try_other_query": "Try a different query or reset the filter",
+    "add_hint": "Click «+ Trade» or Sync with the exchange"
   },
   "chart": {
     "loading": "Loading candles…",
@@ -111,7 +136,33 @@
     "email_taken": "Email is already registered",
     "weak_password": "Password is too short (minimum 8 characters)",
     "email_not_verified": "Email not verified — check your inbox",
-    "reset_sent": "If this email exists, we've sent a reset link"
+    "reset_sent": "If this email exists, we've sent a reset link",
+    "login_title_h1": "Log in to your account",
+    "forgot_short": "Forgot password?",
+    "no_account_q": "No account?",
+    "register_link": "Sign up",
+    "have_account_q": "Already have an account?",
+    "login_link": "Log in",
+    "name_optional": "Name <span style=\"color: var(--muted);\">(optional)</span>",
+    "password_repeat": "Confirm password",
+    "password_hint": "Minimum 8 characters. The encryption key for exchange API keys is derived from this password.",
+    "security_login": "🔐 <strong>Zero-knowledge:</strong> your password is never sent to the server in plaintext, exchange keys are encrypted and decrypted only within your session.",
+    "security_register": "⚠️ <strong>Important:</strong> if you lose your password — exchange API keys cannot be recovered (zero-knowledge architecture). You'll need to re-enter them after a password reset.",
+    "forgot_h1": "🔑 Reset password",
+    "forgot_desc": "Enter your email — we'll send a reset link.",
+    "forgot_warning": "<strong>⚠ Warning:</strong> after a password change, stored exchange API keys become inaccessible (zero-knowledge protection — even we can't decrypt them). You'll need to re-enter them. Trades and history are kept.",
+    "back_to_login_arrow": "← Back to login",
+    "reset_h1": "🔑 New password",
+    "new_password": "New password",
+    "reset_password_hint": "Minimum 8 characters, must include a letter and a digit.",
+    "repeat_password": "Repeat password",
+    "change_password_btn": "Change password",
+    "reset_warning": "<strong>⚠ After password change:</strong> stored exchange API keys will be cleared (encrypted with the old password — zero-knowledge protection). After login, re-enter them in settings. Trades and history are kept.",
+    "check_inbox_h1": "📧 Check your inbox",
+    "we_sent_to": "We've sent a confirmation email to:",
+    "your_email_fallback": "your email",
+    "click_link_hint": "Click the link in the email to confirm and log in.<br>The email may take 1-2 minutes. Don't forget to check <b>spam</b>.",
+    "resend_btn": "Resend email"
   },
   "admin": {
     "panel": "Admin panel",
@@ -130,7 +181,12 @@
     "remove_admin": "Revoke admin",
     "verify": "Verify email",
     "delete": "Delete",
-    "confirm_delete": "Delete this user? This action cannot be undone."
+    "confirm_delete": "Delete this user? This action cannot be undone.",
+    "nav_dashboard": "Dashboard",
+    "nav_users": "Users",
+    "nav_audit": "Audit log",
+    "nav_share_links": "Share links",
+    "back_to_app": "← Back to app"
   },
   "toast": {
     "saved": "Saved",
@@ -138,7 +194,21 @@
     "error": "Error",
     "network_error": "Network error",
     "session_expired": "Session expired — please log in again",
-    "copied": "Copied to clipboard"
+    "copied": "Copied to clipboard",
+    "setup_removed": "Setup removed",
+    "fetching_deposits": "Fetching deposits from the exchange…",
+    "no_deposits_api": "Exchange doesn't return deposits via available APIs — add manually via «+ Operation»",
+    "fetching_trades": "Fetching trades for {0} → {1}",
+    "fetching_full_history": "Fetching full history from exchange (since 2020)…",
+    "sync_error": "Sync error",
+    "csv_no_rows": "No valid rows found in CSV",
+    "invalid_value": "Invalid value",
+    "invalid_amount": "Invalid amount",
+    "positive_amount": "Enter a positive amount",
+    "trade_deleted": "Trade deleted",
+    "dep_deleted": "Operation deleted",
+    "goal_updated": "Goal updated",
+    "goal_deleted": "Goal deleted"
   },
   "common": {
     "cancel": "Cancel",
@@ -148,6 +218,120 @@
     "close": "Close",
     "yes": "Yes",
     "no": "No",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "by": "by"
+  },
+  "period": {
+    "day": "Day",
+    "week": "Week",
+    "month": "Month",
+    "year": "Year",
+    "all": "All",
+    "last_24h": "Last 24 hours",
+    "last_7d": "Last 7 days",
+    "last_30d": "Last 30 days",
+    "last_365d": "Last 365 days",
+    "last_all": "All time"
+  },
+  "stat": {
+    "trades": "Trades",
+    "wins": "Winners",
+    "losses": "Losers"
+  },
+  "deposits": {
+    "total_in": "Total deposited",
+    "total_out": "Total withdrawn",
+    "net": "Net deposit",
+    "col_date": "Date",
+    "col_type": "Type",
+    "col_amount": "Amount $",
+    "col_source": "Source",
+    "col_comment": "Comment"
+  },
+  "setups": {
+    "title": "Setup analytics — which one actually makes money",
+    "manage_btn": "Manage setups"
+  },
+  "advanced": {
+    "sub": "Professional metrics (trades of the active goal)",
+    "loading": "Loading analytics…"
+  },
+  "scenario": {
+    "label": "Scenario",
+    "custom": "Custom"
+  },
+  "monthly": {
+    "col_month": "Month",
+    "col_plan": "Plan $",
+    "col_fact": "Actual $",
+    "col_delta_d": "Δ $",
+    "col_delta_p": "Δ %",
+    "col_trades": "Trades",
+    "col_discipline": "Discipline"
+  },
+  "trade_form": {
+    "date_time": "Date/time",
+    "pair": "Pair",
+    "setup": "Setup",
+    "none": "— none —",
+    "fee": "Fee $",
+    "note": "Note",
+    "add_title": "New trade"
+  },
+  "deposit_form": {
+    "date": "Date",
+    "type": "Type",
+    "amount": "Amount $",
+    "comment": "Comment",
+    "kind_deposit": "Deposit",
+    "kind_withdraw": "Withdraw"
+  },
+  "setups_modal": {
+    "hint": "When you delete a setup, trades with this tag only lose the tag.",
+    "add": "Add",
+    "done": "Done"
+  },
+  "hotkeys": {
+    "title": "Hotkeys",
+    "new_trade": "New trade",
+    "search": "Search the journal",
+    "sync_exch": "Sync with exchange",
+    "open_settings": "Open settings",
+    "close_modal": "Close modal",
+    "download_csv": "Download CSV",
+    "got_it": "Got it"
+  },
+  "credentials_modal": {
+    "hint": "Keys are stored locally in config.ini next to the app. Nothing is sent anywhere. Use keys with <b>Read only</b> permissions (no Trade/Withdraw).",
+    "exchange": "Exchange",
+    "clear": "Clear"
+  },
+  "goal_onb": {
+    "preset_start": "Start",
+    "preset_x5": "×5 from start",
+    "preset_avg": "Average",
+    "preset_six_zeros": "Six zeros",
+    "name": "Goal name",
+    "custom_amount": "Custom amount ($)",
+    "monthly_dep": "Monthly deposit ($)",
+    "return_plan": "Return plan (%/mo)",
+    "start_capital": "Starting capital ($)",
+    "start_date": "Tracking start date",
+    "tip_start_capital": "💡 <b>Starting capital</b>: how much you had when you began tracking. Set <b>0</b> — the app will pull current equity from the exchange on next Sync.",
+    "tip_start_date": "💡 <b>Tracking start date</b>: the plan and progress are calculated from this date. Usually the day you started trading or opened the account.",
+    "skip": "Skip",
+    "create": "Create goal"
+  },
+  "chart_modal": {
+    "title": "Trade chart"
+  },
+  "forecast": {
+    "no_goal": "No goal set",
+    "cta_create": "Create goal",
+    "cta_open_wizard": "Open wizard",
+    "no_capital": "Top up the account or set a monthly deposit",
+    "no_growth": "Set planned return > 0%",
+    "too_far": "Goal is too far — reconsider",
+    "unavailable": "Forecast unavailable"
   }
 }
