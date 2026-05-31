@@ -2390,6 +2390,114 @@ def api_equity_daily():
 import secrets as _secrets
 
 
+@app.route("/api/trades/<int:trade_id>/chart")
+@_login_required
+def api_trade_chart(trade_id):
+    """
+    Возвращает свечи вокруг времени сделки + meta для маркеров entry/exit.
+    Использует публичный Binance API (без auth, CORS open).
+    Query params:
+      - tf: timeframe (1m, 5m, 15m, 1h, 4h) — default 15m
+      - bars_before: число свечей до entry — default 50
+      - bars_after: число свечей после exit — default 50
+    """
+    import requests as _requests
+    # Тянем сделку из БД с user_id check
+    try:
+        trades = db.list_trades(limit=100000)
+        trade = next((t for t in trades if t.get("id") == trade_id), None)
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+    if not trade:
+        return jsonify({"ok": False, "error": "Сделка не найдена"}), 404
+
+    tf = (request.args.get("tf") or "15m").lower()
+    if tf not in ("1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "1d"):
+        tf = "15m"
+    bars_before = max(10, min(200, int(request.args.get("bars_before") or 50)))
+    bars_after  = max(10, min(200, int(request.args.get("bars_after")  or 50)))
+
+    # Парсим время сделки (ISO string)
+    from datetime import datetime as _dt, timedelta as _td
+    try:
+        ts_str = trade.get("ts") or ""
+        entry_dt = _dt.fromisoformat(ts_str.replace("Z", "+00:00")) if ts_str else _dt.utcnow()
+        if entry_dt.tzinfo is None:
+            from datetime import timezone as _tz
+            entry_dt = entry_dt.replace(tzinfo=_tz.utc)
+    except Exception:
+        from datetime import timezone as _tz
+        entry_dt = _dt.now(_tz.utc)
+
+    # Минуты в timeframe
+    tf_minutes = {"1m":1,"3m":3,"5m":5,"15m":15,"30m":30,"1h":60,"2h":120,"4h":240,"1d":1440}[tf]
+    total_window_min = (bars_before + bars_after) * tf_minutes
+    start_dt = entry_dt - _td(minutes=bars_before * tf_minutes)
+    end_dt   = entry_dt + _td(minutes=bars_after  * tf_minutes)
+
+    # Binance ожидает milliseconds
+    start_ms = int(start_dt.timestamp() * 1000)
+    end_ms   = int(end_dt.timestamp()   * 1000)
+
+    symbol = (trade.get("symbol") or "").upper().replace("/", "")
+    if not symbol:
+        return jsonify({"ok": False, "error": "У сделки нет symbol"}), 400
+
+    # Binance kline interval — те же строки что мы поддерживаем
+    try:
+        resp = _requests.get(
+            "https://api.binance.com/api/v3/klines",
+            params={
+                "symbol": symbol,
+                "interval": tf,
+                "startTime": start_ms,
+                "endTime": end_ms,
+                "limit": 1000,
+            },
+            timeout=10,
+            headers={"User-Agent": "TradeRunner/4.1 (+https://github.com/Cardsoff/traderunner)"},
+        )
+        if resp.status_code != 200:
+            return jsonify({"ok": False, "error": f"Binance HTTP {resp.status_code}: {resp.text[:200]}"}), 502
+        raw = resp.json()
+    except Exception as e:
+        return jsonify({"ok": False, "error": f"Binance fetch failed: {e}"}), 502
+
+    # Преобразуем в формат Lightweight Charts: {time, open, high, low, close, volume}
+    candles = []
+    for k in raw:
+        # k = [openTime_ms, open, high, low, close, volume, closeTime_ms, ...]
+        candles.append({
+            "time": int(k[0] // 1000),  # Lightweight Charts: unix seconds
+            "open":  float(k[1]),
+            "high":  float(k[2]),
+            "low":   float(k[3]),
+            "close": float(k[4]),
+            "volume": float(k[5]),
+        })
+
+    return jsonify({
+        "ok": True,
+        "trade": {
+            "id": trade["id"],
+            "symbol": symbol,
+            "side": trade.get("side"),
+            "entry_price": trade.get("entry_price"),
+            "exit_price":  trade.get("exit_price"),
+            "entry_ts": int(entry_dt.timestamp()),
+            "exit_ts":  int(entry_dt.timestamp()),  # пока используем entry — exact exit_ts добавим позже
+            "pnl_usd": trade.get("pnl_usd"),
+            "pnl_pct": trade.get("pnl_pct"),
+            "qty": trade.get("qty"),
+            "setup": trade.get("setup"),
+            "note": trade.get("note"),
+        },
+        "candles": candles,
+        "tf": tf,
+        "source": "binance_public",
+    })
+
+
 @app.route("/api/share/create", methods=["POST"])
 @_login_required
 def api_share_create():
