@@ -1,26 +1,25 @@
 {% extends "auth_layout.html" %}
 {% block title %}Проверь почту — TradeRunner{% endblock %}
 {% block content %}
-<h1>📧 Проверь почту</h1>
+<h1 data-i18n="auth.check_inbox_h1">📧 Проверь почту</h1>
 
 <p style="color: var(--muted); font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
-  Мы отправили письмо с подтверждением на:
+  <span data-i18n="auth.we_sent_to">Мы отправили письмо с подтверждением на:</span>
 </p>
 <p style="background: var(--bg); padding: 12px; border-radius: 6px; font-family: monospace;
           word-break: break-all; margin-bottom: 20px;">
-  {{ email or 'твой email' }}
+  {{ email or 'your email' }}
 </p>
 <p style="color: var(--muted); font-size: 13px; line-height: 1.6;">
-  Нажми на ссылку из письма, чтобы подтвердить email и войти.<br>
-  Письмо может прийти с задержкой 1-2 минуты. Не забудь проверить <b>спам</b>.
+  <span data-i18n="auth.click_link_hint">Нажми на ссылку из письма, чтобы подтвердить email и войти.<br>Письмо может прийти с задержкой 1-2 минуты. Не забудь проверить <b>спам</b>.</span>
 </p>
 
 <form method="POST" action="{{ url_for('auth.resend_verification') }}" style="margin-top: 24px;">
   <input type="hidden" name="email" value="{{ email }}">
-  <button type="submit" class="btn-primary">Отправить письмо повторно</button>
+  <button type="submit" class="btn-primary" data-i18n="auth.resend_btn">Отправить письмо повторно</button>
 </form>
 
 <div class="form-footer">
-  <a href="{{ url_for('auth.login') }}">← Вернуться ко входу</a>
+  <a href="{{ url_for('auth.login') }}" data-i18n="auth.back_to_login_arrow">← Вернуться ко входу</a>
 </div>
 {% endblock %}

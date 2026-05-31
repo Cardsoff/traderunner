@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>{% block title %}TradeRunner{% endblock %}</title>
+<script src="/static/i18n.js"></script>
 <style>
   :root {
     --bg: #0a0e14;
@@ -144,8 +145,12 @@
 </style>
 </head>
 <body>
+  <div style="position:fixed;top:14px;right:14px;display:flex;gap:2px;align-items:center;background:#11161f;border:1px solid #1f2837;border-radius:8px;padding:2px;z-index:1000;">
+    <button type="button" class="btn-lang" data-lang="ru" style="background:none;border:0;color:#e5edf5;padding:4px 8px;font-size:12px;border-radius:6px;cursor:pointer;opacity:.6;">RU</button>
+    <button type="button" class="btn-lang" data-lang="en" style="background:none;border:0;color:#e5edf5;padding:4px 8px;font-size:12px;border-radius:6px;cursor:pointer;opacity:.6;">EN</button>
+  </div>
   <div class="brand">TradeRunner</div>
-  <div class="brand-tagline">Журнал и аналитика твоих крипто-сделок</div>
+  <div class="brand-tagline" data-i18n="brand.tagline_auth">Журнал и аналитика твоих крипто-сделок</div>
 
   <div class="card">
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -162,5 +167,25 @@
   </div>
 
   {% block footer_extra %}{% endblock %}
+<script>
+(function(){
+  function hi(){
+    var cur=(window.i18n&&window.i18n.getLang())||'ru';
+    document.querySelectorAll('.btn-lang').forEach(function(b){
+      var a=b.getAttribute('data-lang')===cur;
+      b.style.opacity=a?'1':'0.6';
+      b.style.background=a?'rgba(90,155,224,0.18)':'transparent';
+      b.style.fontWeight=a?'600':'400';
+    });
+  }
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.btn-lang');
+    if(!b||!window.i18n)return;
+    window.i18n.setLang(b.getAttribute('data-lang')).then(hi);
+  });
+  document.addEventListener('i18n:changed',hi);
+  setTimeout(hi,500);
+})();
+</script>
 </body>
 </html>

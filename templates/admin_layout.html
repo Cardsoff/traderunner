@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{% block title %}Admin — TradeRunner{% endblock %}</title>
+<script src="/static/i18n.js"></script>
 <style>
   :root {
     --bg: #0a0e14; --card: #11161f; --border: #1f2837;
@@ -88,13 +89,17 @@
 <header>
   <span class="brand">🛠 TradeRunner Admin</span>
   <nav>
-    <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}">Dashboard</a>
-    <a href="{{ url_for('admin.users_list') }}" class="{% if 'users' in request.endpoint %}active{% endif %}">Юзеры</a>
-    <a href="{{ url_for('admin.audit_log') }}" class="{% if request.endpoint == 'admin.audit_log' %}active{% endif %}">Audit log</a>
-    <a href="{{ url_for('admin.share_links_list') }}" class="{% if request.endpoint == 'admin.share_links_list' %}active{% endif %}">Share links</a>
+    <a href="{{ url_for('admin.dashboard') }}" class="{% if request.endpoint == 'admin.dashboard' %}active{% endif %}" data-i18n="admin.nav_dashboard">Dashboard</a>
+    <a href="{{ url_for('admin.users_list') }}" class="{% if 'users' in request.endpoint %}active{% endif %}" data-i18n="admin.nav_users">Юзеры</a>
+    <a href="{{ url_for('admin.audit_log') }}" class="{% if request.endpoint == 'admin.audit_log' %}active{% endif %}" data-i18n="admin.nav_audit">Audit log</a>
+    <a href="{{ url_for('admin.share_links_list') }}" class="{% if request.endpoint == 'admin.share_links_list' %}active{% endif %}" data-i18n="admin.nav_share_links">Share links</a>
   </nav>
+    <div class="lang-switch" style="display:flex;gap:2px;align-items:center;background:var(--border);border-radius:6px;padding:2px;margin-left:8px;">
+      <button type="button" class="btn-lang" data-lang="ru" style="background:none;border:0;color:var(--text);padding:3px 7px;font-size:11px;border-radius:4px;cursor:pointer;opacity:.6;">RU</button>
+      <button type="button" class="btn-lang" data-lang="en" style="background:none;border:0;color:var(--text);padding:3px 7px;font-size:11px;border-radius:4px;cursor:pointer;opacity:.6;">EN</button>
+    </div>
   <div class="user-info">
-    {{ current_user.email }} · <a href="{{ url_for('index') }}">← К приложению</a>
+    {{ current_user.email }} · <a href="{{ url_for('index') }}" data-i18n="admin.back_to_app">← К приложению</a>
   </div>
 </header>
 
@@ -112,5 +117,25 @@
 </main>
 
 {% block scripts %}{% endblock %}
+<script>
+(function(){
+  function hi(){
+    var cur=(window.i18n&&window.i18n.getLang())||'ru';
+    document.querySelectorAll('.btn-lang').forEach(function(b){
+      var a=b.getAttribute('data-lang')===cur;
+      b.style.opacity=a?'1':'0.6';
+      b.style.background=a?'rgba(90,155,224,0.18)':'transparent';
+      b.style.fontWeight=a?'600':'400';
+    });
+  }
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.btn-lang');
+    if(!b||!window.i18n)return;
+    window.i18n.setLang(b.getAttribute('data-lang')).then(hi);
+  });
+  document.addEventListener('i18n:changed',hi);
+  setTimeout(hi,500);
+})();
+</script>
 </body>
 </html>

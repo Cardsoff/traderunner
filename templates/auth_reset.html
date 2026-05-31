@@ -1,26 +1,24 @@
 {% extends "auth_layout.html" %}
 {% block title %}Новый пароль — TradeRunner{% endblock %}
 {% block content %}
-<h1>🔑 Новый пароль</h1>
+<h1 data-i18n="auth.reset_h1">🔑 Новый пароль</h1>
 
 <form method="POST" action="{{ url_for('auth.reset_password', token=token) }}">
   <div class="form-group">
-    <label for="password">Новый пароль</label>
+    <label for="password" data-i18n="auth.new_password">Новый пароль</label>
     <input type="password" id="password" name="password" required autofocus minlength="8" autocomplete="new-password">
-    <div class="hint">Минимум 8 символов, обязательно буква и цифра.</div>
+    <div class="hint" data-i18n="auth.reset_password_hint">Минимум 8 символов, обязательно буква и цифра.</div>
   </div>
 
   <div class="form-group">
-    <label for="password2">Повтори пароль</label>
+    <label for="password2" data-i18n="auth.repeat_password">Повтори пароль</label>
     <input type="password" id="password2" name="password2" required minlength="8" autocomplete="new-password">
   </div>
 
-  <button type="submit" class="btn-primary">Сменить пароль</button>
+  <button type="submit" class="btn-primary" data-i18n="auth.change_password_btn">Сменить пароль</button>
 </form>
 
 <div class="security-badge" style="margin-top: 20px;">
-  <strong>⚠ После смены пароля:</strong> сохранённые API-ключи биржи будут очищены
-  (они зашифрованы старым паролем — это zero-knowledge защита).
-  После входа введи их заново через настройки. Сделки и история сохранятся.
+  <span data-i18n="auth.reset_warning"><strong>⚠ После смены пароля:</strong> сохранённые API-ключи биржи будут очищены (они зашифрованы старым паролем — это zero-knowledge защита). После входа введи их заново через настройки. Сделки и история сохранятся.</span>
 </div>
 {% endblock %}

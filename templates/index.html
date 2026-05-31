@@ -19,7 +19,7 @@
     </div>
     <div>
       <div class="brand-name">TradeRunner</div>
-      <div class="brand-sub">Беги к своей цели. Считай каждый трейд</div>
+      <div class="brand-sub" data-i18n="brand.tagline">Беги к своей цели. Считай каждый трейд</div>
     </div>
   </div>
   <div class="nav-actions">
@@ -62,11 +62,11 @@
     <div class="ga-text">
       <div class="ga-emoji">🎯</div>
       <div>
-        <div class="ga-title">Цель достигнута!</div>
-        <div class="ga-sub" id="gaSub">Закрепи победу — заархивируй и поставь новую</div>
+        <div class="ga-title" data-i18n="goal.achieved_title">Цель достигнута!</div>
+        <div class="ga-sub" id="gaSub" data-i18n="goal.achieved_sub">Закрепи победу — заархивируй и поставь новую</div>
       </div>
     </div>
-    <button class="btn btn-primary" id="completeGoalBtn"><span>В архив и новую</span></button>
+    <button class="btn btn-primary" id="completeGoalBtn"><span data-i18n="goal.archive_new">В архив и новую</span></button>
   </div>
 
   <!-- ОСНОВНАЯ КАРТОЧКА ЦЕЛИ (full-width). Сочетает: текущий капитал, цель,
@@ -93,17 +93,17 @@
 
     <div class="goal-card-amounts">
       <div class="gca-current">
-        <div class="gca-eyebrow">Текущий капитал</div>
+        <div class="gca-eyebrow" data-i18n="goal.current_capital">Текущий капитал</div>
         <div class="gca-value" id="heroEquity">$0</div>
       </div>
       <div class="gca-arrow">→</div>
       <div class="gca-target">
-        <div class="gca-eyebrow">Цель</div>
+        <div class="gca-eyebrow" data-i18n="goal.target">Цель</div>
         <div class="gca-value" id="goalAmount">$0</div>
       </div>
       <div class="gca-progress">
         <div class="gca-pct" id="goalPctBig">0%</div>
-        <div class="gca-pct-label">прогресс</div>
+        <div class="gca-pct-label" data-i18n="goal.progress_label">прогресс</div>
       </div>
     </div>
 
@@ -117,7 +117,7 @@
     <div class="goal-card-footer">
       <div class="gcf-left">
         <div class="gcf-item"><span class="gcf-label">📅 Прогноз</span><b id="goalForecast">—</b></div>
-        <div class="gcf-item"><span class="gcf-label">Осталось</span><b id="goalRemain">—</b></div>
+        <div class="gcf-item"><span class="gcf-label" data-i18n="goal.remaining">Осталось</span><b id="goalRemain">—</b></div>
       </div>
       <div class="gcf-right">
         <!-- сюда JS вставит pace chip (опережение/отставание) -->
@@ -182,14 +182,14 @@
   <section class="charts-grid">
     <div class="card">
       <div class="card-header">
-        <div><div class="card-title">Рост капитала</div><div class="card-sub">План vs Факт</div></div>
-        <div class="legend"><div class="legend-item"><span class="ldot dot-plan"></span>План</div><div class="legend-item"><span class="ldot dot-fact"></span>Факт</div></div>
+        <div><div class="card-title" data-i18n="equity.growth">Рост капитала</div><div class="card-sub" data-i18n="equity.plan_vs_fact">План vs Факт</div></div>
+        <div class="legend"><div class="legend-item"><span class="ldot dot-plan"></span><span data-i18n="equity.plan">План</span></div><div class="legend-item"><span class="ldot dot-fact"></span><span data-i18n="equity.fact">Факт</span></div></div>
       </div>
       <div class="chart-container"><canvas id="growthChart"></canvas></div>
     </div>
     <div class="card">
       <div class="card-header">
-        <div><div class="card-title">Месячная доходность %</div><div class="card-sub">План vs Факт</div></div>
+        <div><div class="card-title" data-i18n="equity.monthly_yield">Месячная доходность %</div><div class="card-sub" data-i18n="equity.plan_vs_fact">План vs Факт</div></div>
         <div class="legend"><div class="legend-item"><span class="ldot dot-plan"></span>План</div><div class="legend-item"><span class="ldot dot-fact"></span>Факт</div></div>
       </div>
       <div class="chart-container"><canvas id="returnsChart"></canvas></div>
@@ -199,7 +199,7 @@
   <!-- #2 #3: Equity curve по дням + Underwater plot -->
   <section class="card" id="equityDailyCard" style="margin-bottom:14px; display:none;">
     <div class="card-header">
-      <div><div class="card-title">📈 Equity curve · по дням</div><div class="card-sub">Дневной баланс и просадка в рамках активной цели</div></div>
+      <div><div class="card-title" data-i18n="equity.curve_title">📈 Equity curve · по дням</div><div class="card-sub" data-i18n="equity.curve_sub">Дневной баланс и просадка в рамках активной цели</div></div>
       <div class="legend">
         <div class="legend-item"><span class="ldot" style="background:#10c98a;"></span>Equity</div>
         <div class="legend-item"><span class="ldot" style="background:#ff5a6c;"></span>Drawdown %</div>
@@ -212,15 +212,15 @@
   <div class="section-head section-head-with-dates">
     <div class="section-head-left">
       <div class="section-title">📊 Статистика сделок</div>
-      <div class="section-sub muted" id="globalPeriodSub">За 24 часа</div>
+      <div class="section-sub muted" id="globalPeriodSub" data-i18n="period.last_24h">За 24 часа</div>
     </div>
     <div class="section-head-filter">
       <div class="period-toggle" id="periodToggle">
-        <button data-p="D" class="active" title="За последние 24 часа">День</button>
-        <button data-p="W" title="За последние 7 дней">Неделя</button>
-        <button data-p="M" title="За последние 30 дней">Месяц</button>
-        <button data-p="Y" title="За последние 365 дней">Год</button>
-        <button data-p="ALL" title="За всю историю">Всё</button>
+        <button data-p="D" class="active" title="За последние 24 часа" data-i18n="period.day">День</button>
+        <button data-p="W" title="За последние 7 дней" data-i18n="period.week">Неделя</button>
+        <button data-p="M" title="За последние 30 дней" data-i18n="period.month">Месяц</button>
+        <button data-p="Y" title="За последние 365 дней" data-i18n="period.year">Год</button>
+        <button data-p="ALL" title="За всю историю" data-i18n="period.all">Всё</button>
       </div>
       <span class="fb-sep"></span>
       <span class="fb-label">📅 c</span>
@@ -230,9 +230,9 @@
     </div>
   </div>
   <section class="stats-grid">
-    <div class="stat-box"><div class="stat-label">Сделок</div><div class="stat-value" id="statTotal">0</div></div>
-    <div class="stat-box"><div class="stat-label">Прибыльных</div><div class="stat-value stat-pos" id="statWins">0</div></div>
-    <div class="stat-box"><div class="stat-label">Убыточных</div><div class="stat-value stat-neg" id="statLosses">0</div></div>
+    <div class="stat-box"><div class="stat-label" data-i18n="stat.trades">Сделок</div><div class="stat-value" id="statTotal">0</div></div>
+    <div class="stat-box"><div class="stat-label" data-i18n="stat.wins">Прибыльных</div><div class="stat-value stat-pos" id="statWins">0</div></div>
+    <div class="stat-box"><div class="stat-label" data-i18n="stat.losses">Убыточных</div><div class="stat-value stat-neg" id="statLosses">0</div></div>
     <div class="stat-box"><div class="stat-label">Winrate</div><div class="stat-value" id="statWinrate">0%</div></div>
     <div class="stat-box"><div class="stat-label">Avg P&L</div><div class="stat-value" id="statAvg">$0</div></div>
     <div class="stat-box"><div class="stat-label">Best</div><div class="stat-value stat-pos" id="statBest">$0</div></div>
@@ -261,20 +261,20 @@
         </div>
       </div>
       <div class="muted" style="margin-bottom: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-        <span>Фильтр по сетапу:</span>
+        <span data-i18n="trades.filter_setup">Фильтр по сетапу:</span>
         <div id="setupFilterChips" class="scenario-chips"></div>
       </div>
       <div class="table-wrap">
         <table class="data-table" id="tradesTable">
           <thead><tr>
-            <th class="sortable" data-sort="ts">Дата <span class="sort-arrow">▼</span></th>
-            <th class="sortable" data-sort="symbol">Пара <span class="sort-arrow">▼</span></th>
-            <th>Side</th><th>Сетап</th>
+            <th class="sortable" data-sort="ts"><span data-i18n="trades.col_date">Дата</span> <span class="sort-arrow">▼</span></th>
+            <th class="sortable" data-sort="symbol"><span data-i18n="trades.col_pair">Пара</span> <span class="sort-arrow">▼</span></th>
+            <th data-i18n="trades.col_side_short">Side</th><th data-i18n="trades.col_setup">Сетап</th>
             <th class="sortable" data-sort="entry_price">Entry <span class="sort-arrow">▼</span></th>
             <th class="sortable" data-sort="exit_price">Exit <span class="sort-arrow">▼</span></th>
             <th class="sortable" data-sort="pnl_usd">P&L $ <span class="sort-arrow">▼</span></th>
             <th class="sortable" data-sort="pnl_pct">P&L % <span class="sort-arrow">▼</span></th>
-            <th>Источник</th><th>Заметка</th><th></th>
+            <th data-i18n="trades.col_source">Источник</th><th data-i18n="trades.col_note">Заметка</th><th></th>
           </tr></thead>
           <tbody id="tradesBody"></tbody>
         </table>
@@ -284,9 +284,9 @@
     <input type="file" id="depositsCsvInput" accept=".csv,text/csv" style="display:none" />
     <div class="tab-panel" id="tab-deposits">
       <div class="dep-summary">
-        <div class="dep-card in"><div class="dep-card-label">Всего пополнено</div><div class="dep-card-value" id="depTotalIn">$0</div></div>
-        <div class="dep-card out"><div class="dep-card-label">Всего выведено</div><div class="dep-card-value" id="depTotalOut">$0</div></div>
-        <div class="dep-card net"><div class="dep-card-label">Чистый депозит</div><div class="dep-card-value" id="depNet">$0</div></div>
+        <div class="dep-card in"><div class="dep-card-label" data-i18n="deposits.total_in">Всего пополнено</div><div class="dep-card-value" id="depTotalIn">$0</div></div>
+        <div class="dep-card out"><div class="dep-card-label" data-i18n="deposits.total_out">Всего выведено</div><div class="dep-card-value" id="depTotalOut">$0</div></div>
+        <div class="dep-card net"><div class="dep-card-label" data-i18n="deposits.net">Чистый депозит</div><div class="dep-card-value" id="depNet">$0</div></div>
       </div>
       <div class="filter-bar" data-scope="deposits">
         <span class="fb-label">📅 c</span>
@@ -304,7 +304,7 @@
       </div>
       <div class="table-wrap">
         <table class="data-table">
-          <thead><tr><th>Дата</th><th>Тип</th><th>Сумма $</th><th>Источник</th><th>Комментарий</th><th></th></tr></thead>
+          <thead><tr><th data-i18n="deposits.col_date">Дата</th><th data-i18n="deposits.col_type">Тип</th><th data-i18n="deposits.col_amount">Сумма $</th><th data-i18n="deposits.col_source">Источник</th><th data-i18n="deposits.col_comment">Комментарий</th><th></th></tr></thead>
           <tbody id="depositsBody"></tbody>
         </table>
       </div>
@@ -319,19 +319,19 @@
           <option value="archive">🏆 Только архивные</option>
         </select>
         <span class="fb-sep"></span>
-        <span class="fb-label">Сценарий</span>
+        <span class="fb-label" data-i18n="scenario.label">Сценарий</span>
         <div class="scenario-chips" id="scenarioChips">
           <button class="scenario-chip" data-s="5">🐢 5%/мес</button>
           <button class="scenario-chip active" data-s="10">⚖️ 10%/мес</button>
           <button class="scenario-chip" data-s="15">🚀 15%/мес</button>
-          <button class="scenario-chip" data-s="custom">Свой</button>
+          <button class="scenario-chip" data-s="custom" data-i18n="scenario.custom">Свой</button>
         </div>
       </div>
       <div class="pf-summary" id="pfSummary"></div>
       <div class="muted" style="margin-bottom: 8px;">🟢 — факт выше плана · 🔴 — факт ниже плана</div>
       <div class="table-wrap">
         <table class="data-table">
-          <thead><tr><th>Месяц</th><th>План $</th><th>Факт $</th><th>Откл $</th><th>Откл %</th><th>Сделок</th><th>Дисциплина</th></tr></thead>
+          <thead><tr><th data-i18n="monthly.col_month">Месяц</th><th data-i18n="monthly.col_plan">План $</th><th data-i18n="monthly.col_fact">Факт $</th><th data-i18n="monthly.col_delta_d">Откл $</th><th data-i18n="monthly.col_delta_p">Откл %</th><th data-i18n="monthly.col_trades">Сделок</th><th data-i18n="monthly.col_discipline">Дисциплина</th></tr></thead>
           <tbody id="planfactBody"></tbody>
         </table>
       </div>
@@ -339,23 +339,23 @@
 
     <div class="tab-panel" id="tab-setups">
       <div class="panel-header">
-        <div class="muted">Аналитика по сетапам — какой реально приносит деньги</div>
-        <button class="btn btn-secondary" id="manageSetupsBtn"><span>Настроить сетапы</span></button>
+        <div class="muted" data-i18n="setups.title">Аналитика по сетапам — какой реально приносит деньги</div>
+        <button class="btn btn-secondary" id="manageSetupsBtn"><span data-i18n="setups.manage_btn">Настроить сетапы</span></button>
       </div>
       <div class="setup-grid" id="setupGrid"></div>
     </div>
 
     <div class="tab-panel" id="tab-advanced">
       <div class="panel-header">
-        <div class="muted">Профессиональные метрики (по сделкам активной цели)</div>
+        <div class="muted" data-i18n="advanced.sub">Профессиональные метрики (по сделкам активной цели)</div>
       </div>
       <div id="advancedContent" class="advanced-content">
-        <div class="muted" style="padding: 24px; text-align:center;">Загружаю аналитику…</div>
+        <div class="muted" style="padding: 24px; text-align:center;" data-i18n="advanced.loading">Загружаю аналитику…</div>
       </div>
     </div>
 
     <div class="tab-panel" id="tab-archive">
-      <div class="panel-header"><div class="muted">История целей: активная и достигнутые</div></div>
+      <div class="panel-header"><div class="muted" data-i18n="goal.history_sub">История целей: активная и достигнутые</div></div>
       <div id="archiveList"></div>
     </div>
   </section>
@@ -365,95 +365,95 @@
 <div class="modal-overlay" id="editGoalModal"><div class="modal">
   <div class="modal-header"><div class="modal-title">🎯 Цель</div><button class="btn-icon-modal" data-close="editGoalModal">✕</button></div>
   <div class="modal-body">
-    <div class="form-row"><label>Название</label><input type="text" id="goalNameInput" placeholder="например: первый депозит x100" /></div>
-    <div class="form-row"><label>Сумма цели ($)</label><input type="number" id="goalAmountInput" step="100" /></div>
-    <div class="form-row"><label>Плановая доходность (%/мес)</label><input type="number" id="goalReturnInput" step="0.1" /></div>
+    <div class="form-row"><label data-i18n="goal.name">Название</label><input type="text" id="goalNameInput" placeholder="например: первый депозит x100" data-i18n-placeholder="goal.name_placeholder" /></div>
+    <div class="form-row"><label data-i18n="goal.amount">Сумма цели ($)</label><input type="number" id="goalAmountInput" step="100" /></div>
+    <div class="form-row"><label data-i18n="goal.return_per_month">Плановая доходность (%/мес)</label><input type="number" id="goalReturnInput" step="0.1" /></div>
     <div class="form-row"><label>Ежемесячный взнос ($) <span class="muted" style="font-weight:400; font-size:11px;">— учитывается в прогнозе достижения цели</span></label><input type="number" id="goalDepositInput" step="50" placeholder="0" /></div>
   </div>
   <div class="modal-footer">
-    <button class="btn btn-ghost" data-close="editGoalModal">Отмена</button>
-    <button class="btn btn-primary" id="saveGoalBtn">Сохранить</button>
+    <button class="btn btn-ghost" data-close="editGoalModal" data-i18n="common.cancel">Отмена</button>
+    <button class="btn btn-primary" id="saveGoalBtn" data-i18n="common.save">Сохранить</button>
   </div>
 </div></div>
 
 <div class="modal-overlay" id="deleteGoalModal"><div class="modal">
   <div class="modal-header"><div class="modal-title">⚠️ Удалить активную цель?</div><button class="btn-icon-modal" data-close="deleteGoalModal">✕</button></div>
-  <div class="modal-body"><div class="confirm-msg">Сделки и депозиты сохранятся. Прогресс к цели обнулится — создадим пустую.</div></div>
+  <div class="modal-body"><div class="confirm-msg" data-i18n="goal.delete_confirm">Сделки и депозиты сохранятся. Прогресс к цели обнулится — создадим пустую.</div></div>
   <div class="modal-footer">
-    <button class="btn btn-ghost" data-close="deleteGoalModal">Отмена</button>
-    <button class="btn btn-danger" id="confirmDeleteGoalBtn">Удалить</button>
+    <button class="btn btn-ghost" data-close="deleteGoalModal" data-i18n="common.cancel">Отмена</button>
+    <button class="btn btn-danger" id="confirmDeleteGoalBtn" data-i18n="common.delete">Удалить</button>
   </div>
 </div></div>
 
 <div class="modal-overlay" id="tradeModal"><div class="modal">
   <div class="modal-header"><div class="modal-title">➕ Новая сделка</div><button class="btn-icon-modal" data-close="tradeModal">✕</button></div>
   <div class="modal-body"><div class="form-grid">
-    <div class="form-row"><label>Дата/время</label><input type="datetime-local" id="tradeTs" /></div>
-    <div class="form-row"><label>Пара</label><input type="text" id="tradeSymbol" placeholder="BTCUSDT" /></div>
+    <div class="form-row"><label data-i18n="trade_form.date_time">Дата/время</label><input type="datetime-local" id="tradeTs" /></div>
+    <div class="form-row"><label data-i18n="trade_form.pair">Пара</label><input type="text" id="tradeSymbol" placeholder="BTCUSDT" /></div>
     <div class="form-row"><label>Side</label><select id="tradeSide"><option value="LONG">LONG</option><option value="SHORT">SHORT</option></select></div>
-    <div class="form-row"><label>Сетап</label><select id="tradeSetup"><option value="">— нет —</option></select></div>
+    <div class="form-row"><label data-i18n="trade_form.setup">Сетап</label><select id="tradeSetup"><option value="" data-i18n="trade_form.none">— нет —</option></select></div>
     <div class="form-row"><label>Entry</label><input type="number" step="any" id="tradeEntry" /></div>
     <div class="form-row"><label>Exit</label><input type="number" step="any" id="tradeExit" /></div>
     <div class="form-row"><label>Qty</label><input type="number" step="any" id="tradeQty" /></div>
     <div class="form-row"><label>P&L $</label><input type="number" step="any" id="tradePnl" /></div>
-    <div class="form-row"><label>Комиссия $</label><input type="number" step="any" id="tradeFee" /></div>
-    <div class="form-row form-row-wide"><label>Заметка</label><textarea id="tradeNote" rows="2"></textarea></div>
+    <div class="form-row"><label data-i18n="trade_form.fee">Комиссия $</label><input type="number" step="any" id="tradeFee" /></div>
+    <div class="form-row form-row-wide"><label data-i18n="trade_form.note">Заметка</label><textarea id="tradeNote" rows="2"></textarea></div>
   </div></div>
   <div class="modal-footer">
-    <button class="btn btn-ghost" data-close="tradeModal">Отмена</button>
-    <button class="btn btn-primary" id="saveTradeBtn">Сохранить</button>
+    <button class="btn btn-ghost" data-close="tradeModal" data-i18n="common.cancel">Отмена</button>
+    <button class="btn btn-primary" id="saveTradeBtn" data-i18n="common.save">Сохранить</button>
   </div>
 </div></div>
 
 <div class="modal-overlay" id="depositModal"><div class="modal">
   <div class="modal-header"><div class="modal-title">💵 Депозит / Вывод</div><button class="btn-icon-modal" data-close="depositModal">✕</button></div>
   <div class="modal-body">
-    <div class="form-row"><label>Дата</label><input type="date" id="depTs" /></div>
-    <div class="form-row"><label>Тип</label><select id="depKind"><option value="deposit">Пополнение</option><option value="withdraw">Вывод</option></select></div>
-    <div class="form-row"><label>Сумма $</label><input type="number" step="0.01" id="depAmount" /></div>
-    <div class="form-row"><label>Комментарий</label><input type="text" id="depNote" /></div>
+    <div class="form-row"><label data-i18n="deposit_form.date">Дата</label><input type="date" id="depTs" /></div>
+    <div class="form-row"><label data-i18n="deposit_form.type">Тип</label><select id="depKind"><option value="deposit" data-i18n="deposit_form.kind_deposit">Пополнение</option><option value="withdraw" data-i18n="deposit_form.kind_withdraw">Вывод</option></select></div>
+    <div class="form-row"><label data-i18n="deposit_form.amount">Сумма $</label><input type="number" step="0.01" id="depAmount" /></div>
+    <div class="form-row"><label data-i18n="deposit_form.comment">Комментарий</label><input type="text" id="depNote" /></div>
   </div>
   <div class="modal-footer">
-    <button class="btn btn-ghost" data-close="depositModal">Отмена</button>
-    <button class="btn btn-primary" id="saveDepBtn">Сохранить</button>
+    <button class="btn btn-ghost" data-close="depositModal" data-i18n="common.cancel">Отмена</button>
+    <button class="btn btn-primary" id="saveDepBtn" data-i18n="common.save">Сохранить</button>
   </div>
 </div></div>
 
 <div class="modal-overlay" id="setupsModal"><div class="modal">
   <div class="modal-header"><div class="modal-title">🎯 Сетапы</div><button class="btn-icon-modal" data-close="setupsModal">✕</button></div>
   <div class="modal-body">
-    <div class="muted" style="margin-bottom: 10px;">При удалении сделки с тэгом теряют только тэг.</div>
+    <div class="muted" style="margin-bottom: 10px;" data-i18n="setups_modal.hint">При удалении сделки с тэгом теряют только тэг.</div>
     <div class="setup-pills" id="setupPills"></div>
     <div class="setup-add-row">
       <input type="text" id="newSetupInput" placeholder="новый сетап (range, FVG, OB...)" maxlength="20" />
-      <button class="btn btn-primary" id="addSetupBtn">Добавить</button>
+      <button class="btn btn-primary" id="addSetupBtn" data-i18n="setups_modal.add">Добавить</button>
     </div>
   </div>
   <div class="modal-footer">
-    <button class="btn btn-secondary" data-close="setupsModal">Готово</button>
+    <button class="btn btn-secondary" data-close="setupsModal" data-i18n="setups_modal.done">Готово</button>
   </div>
 </div></div>
 
 <div class="modal-overlay" id="helpModal"><div class="modal">
   <div class="modal-header"><div class="modal-title">⌨ Горячие клавиши</div><button class="btn-icon-modal" data-close="helpModal">✕</button></div>
   <div class="modal-body"><div class="hotkeys-list">
-    <div class="hk-row"><span class="hk-label">Новая сделка</span><span class="kbd">N</span></div>
-    <div class="hk-row"><span class="hk-label">Поиск в журнале</span><span class="kbd">/</span></div>
-    <div class="hk-row"><span class="hk-label">Sync с биржей</span><span class="kbd">S</span></div>
-    <div class="hk-row"><span class="hk-label">Открыть настройки</span><span class="kbd">,</span></div>
-    <div class="hk-row"><span class="hk-label">Закрыть модалку</span><span class="kbd">Esc</span></div>
-    <div class="hk-row"><span class="hk-label">Скачать CSV</span><span class="kbd">E</span></div>
+    <div class="hk-row"><span class="hk-label" data-i18n="hotkeys.new_trade">Новая сделка</span><span class="kbd">N</span></div>
+    <div class="hk-row"><span class="hk-label" data-i18n="hotkeys.search">Поиск в журнале</span><span class="kbd">/</span></div>
+    <div class="hk-row"><span class="hk-label" data-i18n="hotkeys.sync_exch">Sync с биржей</span><span class="kbd">S</span></div>
+    <div class="hk-row"><span class="hk-label" data-i18n="hotkeys.open_settings">Открыть настройки</span><span class="kbd">,</span></div>
+    <div class="hk-row"><span class="hk-label" data-i18n="hotkeys.close_modal">Закрыть модалку</span><span class="kbd">Esc</span></div>
+    <div class="hk-row"><span class="hk-label" data-i18n="hotkeys.download_csv">Скачать CSV</span><span class="kbd">E</span></div>
   </div></div>
-  <div class="modal-footer"><button class="btn btn-secondary" data-close="helpModal">Понятно</button></div>
+  <div class="modal-footer"><button class="btn btn-secondary" data-close="helpModal" data-i18n="hotkeys.got_it">Понятно</button></div>
 </div></div>
 
 <!-- API Credentials -->
 <div class="modal-overlay" id="credentialsModal"><div class="modal">
   <div class="modal-header"><div class="modal-title">🔌 Подключение биржи</div><button class="btn-icon-modal" data-close="credentialsModal">✕</button></div>
   <div class="modal-body">
-    <div class="muted" style="margin-bottom: 14px;">Ключи хранятся локально в config.ini рядом с приложением. Никуда не отправляются. Используй ключи с правами <b>только Read</b> (без Trade/Withdraw).</div>
+    <div class="muted" style="margin-bottom: 14px;" data-i18n="credentials_modal.hint">Ключи хранятся локально в config.ini рядом с приложением. Никуда не отправляются. Используй ключи с правами <b>только Read</b> (без Trade/Withdraw).</div>
     <div class="form-row">
-      <label>Биржа</label>
+      <label data-i18n="credentials_modal.exchange">Биржа</label>
       <select id="credExchange">
         <option value="bitunix">Bitunix</option>
         <option value="binance" disabled>Binance (скоро)</option>
@@ -475,11 +475,11 @@
     <div class="muted" style="font-size: 11.5px;">💡 Где взять ключи в Bitunix: Profile → API Management → Create API → права Read</div>
   </div>
   <div class="modal-footer">
-    <button class="btn btn-danger" id="clearCredsBtn">Очистить</button>
+    <button class="btn btn-danger" id="clearCredsBtn" data-i18n="credentials_modal.clear">Очистить</button>
     <button class="btn btn-secondary" id="fullHistoryBtn" title="Перезагрузить ВСЮ историю сделок с биржи с 2020 года (медленно, но один раз)">⤓ История с нуля</button>
     <div style="flex: 1;"></div>
-    <button class="btn btn-ghost" data-close="credentialsModal">Отмена</button>
-    <button class="btn btn-primary" id="saveCredsBtn">Сохранить</button>
+    <button class="btn btn-ghost" data-close="credentialsModal" data-i18n="common.cancel">Отмена</button>
+    <button class="btn btn-primary" id="saveCredsBtn" data-i18n="common.save">Сохранить</button>
   </div>
 </div></div>
 
@@ -500,40 +500,40 @@
     <div class="goal-presets" id="goalPresets">
       <button class="goal-preset" data-amount="5000">
         <div class="gp-amount">$5,000</div>
-        <div class="gp-label">Старт</div>
+        <div class="gp-label" data-i18n="goal_onb.preset_start">Старт</div>
       </button>
       <button class="goal-preset" data-amount="10000">
         <div class="gp-amount">$10,000</div>
-        <div class="gp-label">Х5 от старта</div>
+        <div class="gp-label" data-i18n="goal_onb.preset_x5">Х5 от старта</div>
       </button>
       <button class="goal-preset" data-amount="50000">
         <div class="gp-amount">$50,000</div>
-        <div class="gp-label">Средняя</div>
+        <div class="gp-label" data-i18n="goal_onb.preset_avg">Средняя</div>
       </button>
       <button class="goal-preset active" data-amount="100000">
         <div class="gp-amount">$100,000</div>
-        <div class="gp-label">Шесть нулей</div>
+        <div class="gp-label" data-i18n="goal_onb.preset_six_zeros">Шесть нулей</div>
       </button>
     </div>
 
     <div class="form-grid" style="display:grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-top: 14px;">
       <div class="form-row">
-        <label>Название цели</label>
+        <label data-i18n="goal_onb.name">Название цели</label>
         <input type="text" id="goalOnbName" placeholder="например: первый депозит x100" value="Первая цель" maxlength="50" />
       </div>
       <div class="form-row">
-        <label>Своя сумма ($)</label>
+        <label data-i18n="goal_onb.custom_amount">Своя сумма ($)</label>
         <input type="number" id="goalOnbAmount" step="1000" placeholder="25000" value="100000" />
       </div>
     </div>
 
     <div class="form-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
       <div class="form-row">
-        <label>Ежемесячный взнос ($)</label>
+        <label data-i18n="goal_onb.monthly_dep">Ежемесячный взнос ($)</label>
         <input type="number" id="goalOnbDeposit" step="50" value="500" />
       </div>
       <div class="form-row">
-        <label>План доходности (%/мес)</label>
+        <label data-i18n="goal_onb.return_plan">План доходности (%/мес)</label>
         <input type="number" id="goalOnbReturn" step="0.5" value="10" />
       </div>
     </div>
@@ -544,11 +544,11 @@
     </div>
     <div class="form-grid" style="display:grid; grid-template-columns: 1fr 1fr; gap: 12px;">
       <div class="form-row">
-        <label>Стартовый капитал ($)</label>
+        <label data-i18n="goal_onb.start_capital">Стартовый капитал ($)</label>
         <input type="number" id="goalOnbStartCap" step="0.01" placeholder="0 = взять с биржи" value="0" />
       </div>
       <div class="form-row">
-        <label>Дата старта учёта</label>
+        <label data-i18n="goal_onb.start_date">Дата старта учёта</label>
         <input type="date" id="goalOnbStartDate" />
       </div>
     </div>
@@ -560,8 +560,8 @@
     </div>
   </div>
   <div class="modal-footer">
-    <button class="btn btn-ghost" id="goalOnbSkip">Пропустить</button>
-    <button class="btn btn-primary" id="goalOnbSave">Создать цель</button>
+    <button class="btn btn-ghost" id="goalOnbSkip" data-i18n="goal_onb.skip">Пропустить</button>
+    <button class="btn btn-primary" id="goalOnbSave" data-i18n="goal_onb.create">Создать цель</button>
   </div>
 </div></div>
 
@@ -582,7 +582,7 @@
   <div class="modal-box" style="max-width:900px;width:95%;background:var(--card,#11161f);border:1px solid var(--border,#1f2837);border-radius:12px;padding:20px;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10001;box-shadow:0 8px 40px rgba(0,0,0,.6);">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
       <div>
-        <div style="font-size:20px;font-weight:700;" id="tcm_title">График сделки</div>
+        <div style="font-size:20px;font-weight:700;" id="tcm_title" data-i18n="chart_modal.title">График сделки</div>
         <div style="font-size:13px;color:var(--muted,#8a96a8);" id="tcm_subtitle"></div>
       </div>
       <div style="display:flex;gap:8px;align-items:center;">

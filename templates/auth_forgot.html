@@ -1,10 +1,10 @@
 {% extends "auth_layout.html" %}
 {% block title %}Восстановление пароля — TradeRunner{% endblock %}
 {% block content %}
-<h1>🔑 Восстановление пароля</h1>
+<h1 data-i18n="auth.forgot_h1">🔑 Восстановление пароля</h1>
 
 <p style="color: var(--muted); font-size: 13px; margin-bottom: 20px; line-height: 1.5;">
-  Введи email — мы отправим ссылку для сброса пароля.
+  <span data-i18n="auth.forgot_desc">Введи email — мы отправим ссылку для сброса пароля.</span>
 </p>
 
 <form method="POST" action="{{ url_for('auth.forgot_password') }}">
@@ -13,16 +13,14 @@
     <input type="email" id="email" name="email" required autofocus>
   </div>
 
-  <button type="submit" class="btn-primary">Отправить ссылку</button>
+  <button type="submit" class="btn-primary" data-i18n="auth.forgot_btn">Отправить ссылку</button>
 </form>
 
 <div class="security-badge" style="margin-top: 20px;">
-  <strong>⚠ Внимание:</strong> после смены пароля сохранённые API-ключи биржи
-  станут недоступны (это zero-knowledge защита — даже мы их не можем расшифровать).
-  Тебе нужно будет ввести их заново. Сделки и история останутся.
+  <span data-i18n="auth.forgot_warning"><strong>⚠ Внимание:</strong> после смены пароля сохранённые API-ключи биржи станут недоступны (это zero-knowledge защита — даже мы их не можем расшифровать). Тебе нужно будет ввести их заново. Сделки и история останутся.</span>
 </div>
 
 <div class="form-footer">
-  <a href="{{ url_for('auth.login') }}">← Вернуться ко входу</a>
+  <a href="{{ url_for('auth.login') }}" data-i18n="auth.back_to_login_arrow">← Вернуться ко входу</a>
 </div>
 {% endblock %}
