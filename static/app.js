@@ -166,7 +166,7 @@ function render(opts = {}) {
   // Депозиты подгружаются в loadAll; #metaStart/#metaDepNet/#metaProfit удалены из UI
 
   // Goal
-  $('#goalName').textContent = goal.name && goal.name.trim() ? goal.name : 'Без названия';
+  $('#goalName').textContent = goal.name && goal.name.trim() ? goal.name : t('goal.no_name');
   setVal('#goalAmount', fmtMoney(goalAmt, 0));
   // #goalCur и #goalMax удалены из новой карточки цели (значения теперь в #heroEquity и #goalAmount)
   setVal('#goalPctBig', d.pct_to_goal.toFixed(1) + '%');
@@ -178,12 +178,12 @@ function render(opts = {}) {
   let fcBanner = document.getElementById('forecastBanner');
   if (d.forecast && d.forecast.unavailable) {
     const reasons = {
-      no_goal: { msg: 'Цель не задана', cta: 'Создать цель' },
-      no_capital_no_deposit: { msg: 'Пополни счёт или укажи ежемес. взнос', cta: 'Открыть мастер' },
-      no_growth: { msg: 'Укажи плановую доходность > 0%', cta: 'Открыть мастер' },
-      too_far: { msg: 'Цель слишком далеко — пересмотри', cta: 'Открыть мастер' },
+      no_goal: { msg: t('forecast.no_goal'), cta: t('forecast.cta_create') },
+      no_capital_no_deposit: { msg: t('forecast.no_capital'), cta: t('forecast.cta_open_wizard') },
+      no_growth: { msg: t('forecast.no_growth'), cta: t('forecast.cta_open_wizard') },
+      too_far: { msg: t('forecast.too_far'), cta: t('forecast.cta_open_wizard') },
     };
-    const r = reasons[d.forecast.reason] || { msg: 'Прогноз недоступен', cta: 'Открыть мастер' };
+    const r = reasons[d.forecast.reason] || { msg: t('forecast.unavailable'), cta: t('forecast.cta_open_wizard') };
     fcEl.textContent = '—';
     fcEl.style.color = 'var(--text-muted)';
     if (fcSlot && !fcBanner) {
@@ -539,8 +539,8 @@ function renderTradesTable() {
     if (!arr.length) {
       body.innerHTML = `<tr><td colspan="11" class="empty">
         <div class="empty-icon">📭</div>
-        <div class="empty-title">${q ? 'По запросу не нашлось' : 'Сделок пока нет'}</div>
-        <div class="empty-sub">${q ? 'Попробуй другой запрос или сбрось фильтр' : 'Жми «+ Сделка» или Sync с биржей'}</div>
+        <div class="empty-title">${q ? t('trades.no_match') : t('trades.no_trades')}</div>
+        <div class="empty-sub">${q ? t('trades.try_other_query') : t('trades.add_hint')}</div>
       </td></tr>`;
       renderTradesPager(0, 0, 1, 1);
       return;
@@ -798,7 +798,7 @@ async function renderSetupPills() {
     await api.del('/api/setups/' + name);
     await loadAll();
     renderSetupPills();
-    toast('Сетап удалён');
+    toast(t('toast.setup_removed'));
   }));
 }
 
@@ -822,7 +822,7 @@ async function maybeAutoSyncDeposits() {
   try {
     const creds = await fetch('/api/credentials').then(r => r.json());
     if (!creds || !creds.api_key) return;
-    toast('Тяну депозиты с биржи…', 'info');
+    toast(t('toast.fetching_deposits'), 'info');
     const r = await fetch('/api/sync/full', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
@@ -831,7 +831,7 @@ async function maybeAutoSyncDeposits() {
     if (r && (r.deposits_added > 0 || r.deposits_fetched > 0)) {
       toast(`✓ Подтянуто депозитов: ${r.deposits_added}`, 'success');
     } else {
-      toast('Биржа не возвращает депозиты на доступных API — добавь вручную через «+ Операция»', 'info');
+      toast(t('toast.no_deposits_api'), 'info');
     }
     if (typeof loadAll === 'function') await loadAll();
   } catch (e) { /* noop */ }
@@ -847,7 +847,7 @@ $$('#periodToggle button').forEach(b => b.addEventListener('click', () => {
   // обновляем подпись периода
   const subEl = document.getElementById('globalPeriodSub');
   if (subEl) {
-    const labels = { D:'За 24 часа', W:'За 7 дней', M:'За 30 дней', Y:'За 365 дней', ALL:'За всё время' };
+    const labels = { D: t('period.last_24h'), W: t('period.last_7d'), M: t('period.last_30d'), Y: t('period.last_365d'), ALL: t('period.last_all') };
     subEl.textContent = labels[_ui.period] || '';
   }
   loadStats(_ui.period);
@@ -922,7 +922,7 @@ const _dateFilterSynced = new Set();  // ключи 'from-to' уже синка�
         const creds = await fetch('/api/credentials').then(r => r.json());
         if (!creds || !creds.api_key) return;
       } catch (e) { return; }
-      toast(`Тяну сделки с биржи за период ${from || '…'} → ${to || 'сегодня'}`, 'info');
+      toast(t('toast.fetching_trades', from || '…', to || 'today'), 'info');
       try {
         const r = await fetch('/api/sync/full', {
           method: 'POST',
@@ -976,7 +976,7 @@ async function autoSyncFullIfNeeded(selectEl) {
     const creds = await fetch('/api/credentials').then(r => r.json());
     if (!creds || !creds.api_key) return;
     selectEl.disabled = true;
-    toast('Тяну всю историю с биржи (с 2020 г.)…', 'info');
+    toast(t('toast.fetching_full_history'), 'info');
     const r = await fetch('/api/sync/full', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
@@ -990,7 +990,7 @@ async function autoSyncFullIfNeeded(selectEl) {
     toast(msg, r.ok ? 'success' : 'info');
     if (typeof loadAll === 'function') await loadAll();
   } catch (e) {
-    toast('Ошибка sync: ' + (e.message || e), 'error');
+    toast(t('toast.sync_error') + ': ' + (e.message || e), 'error');
   } finally {
     selectEl.disabled = false;
   }
@@ -1017,7 +1017,7 @@ if (syncDepBtn) {
       }
       if (typeof loadAll === 'function') await loadAll();
     } catch (e) {
-      toast('Ошибка sync: ' + e.message, 'error');
+      toast(t('toast.sync_error') + ': ' + e.message, 'error');
     } finally {
       syncDepBtn.disabled = false;
       syncDepBtn.textContent = '↻ С биржи';
@@ -1063,7 +1063,7 @@ if (csvBtn && csvInput) {
         source: 'csv',
       });
     }
-    if (!batch.length) { toast('В CSV не нашлось валидных строк', 'error'); return; }
+    if (!batch.length) { toast(t('toast.csv_no_rows'), 'error'); return; }
     const r = await fetch('/api/deposits', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
@@ -1080,7 +1080,7 @@ $$('.scenario-chip').forEach(c => c.addEventListener('click', async () => {
     const s = prompt('Введи свой % в месяц:', _data?.settings?.scenario || 10);
     if (s == null) return;
     v = parseFloat(s);
-    if (!isFinite(v) || v <= 0) { toast('Некорректное значение', 'error'); return; }
+    if (!isFinite(v) || v <= 0) { toast(t('toast.invalid_value'), 'error'); return; }
   } else v = +c.dataset.s;
   await api.post('/api/settings', { scenario: v });
   await loadAll();
@@ -1110,7 +1110,7 @@ document.addEventListener('click', async e => {
         toast('✗ Не удалось удалить: ' + (err.message || err), 'error');
         return;
       }
-      showUndoSnackbar('Сделка удалена', async () => {
+      showUndoSnackbar(t('toast.trade_deleted'), async () => {
         // Восстанавливаем через POST (новый external_id у manual; для bitunix-сделок sync вернёт)
         await fetch('/api/trades', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(trade) });
         await loadAll();
@@ -1130,7 +1130,7 @@ document.addEventListener('click', async e => {
         toast('✗ Не удалось удалить: ' + (err.message || err), 'error');
         return;
       }
-      showUndoSnackbar('Операция удалена', async () => {
+      showUndoSnackbar(t('toast.dep_deleted'), async () => {
         await fetch('/api/deposits', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(dep) });
         await loadAll();
         toast('↶ Операция восстановлена', 'success');
@@ -1154,7 +1154,7 @@ const openM = id => { const el = $(id); if (el) el.classList.add('open'); };
 $('#editGoalBtn').addEventListener('click', () => openM('#editGoalModal'));
 $('#saveGoalBtn').addEventListener('click', async () => {
   const amt = +$('#goalAmountInput').value;
-  if (!amt || amt <= 0) { toast('Введи положительную сумму', 'error'); return; }
+  if (!amt || amt <= 0) { toast(t('toast.positive_amount'), 'error'); return; }
   const gd = $('#goalDepositInput');
   await api.patch('/api/goal', {
     name: $('#goalNameInput').value.trim(),
@@ -1163,20 +1163,20 @@ $('#saveGoalBtn').addEventListener('click', async () => {
     monthly_deposit: gd ? (+gd.value || 0) : undefined,
   });
   $('#editGoalModal').classList.remove('open');
-  await loadAll(); toast('Цель обновлена');
+  await loadAll(); toast(t('toast.goal_updated'));
 });
 $('#deleteGoalBtn').addEventListener('click', () => openM('#deleteGoalModal'));
 $('#confirmDeleteGoalBtn').addEventListener('click', async () => {
   await api.del('/api/goal');
   $('#deleteGoalModal').classList.remove('open');
-  await loadAll(); toast('Цель удалена');
+  await loadAll(); toast(t('toast.goal_deleted'));
 });
 $('#completeGoalBtn').addEventListener('click', async () => {
   const def = (+(_data?.goal?.amount || 1000) * 2).toString();
   const s = prompt(`🎉 Цель выполнена!\n\nКакая следующая в $?`, def);
   if (s == null) return;
   const newAmt = parseFloat(s);
-  if (!isFinite(newAmt) || newAmt <= 0) { toast('Некорректная сумма', 'error'); return; }
+  if (!isFinite(newAmt) || newAmt <= 0) { toast(t('toast.invalid_amount'), 'error'); return; }
   await api.post('/api/goal/archive', { new_amount: newAmt, new_return_pct: +(_data?.goal?.monthly_return_pct || 10) });
   await loadAll(); toast('🏆 В архив. Новая цель создана.');
 });
@@ -3262,7 +3262,11 @@ function fireConfetti() {
     const lang = btn.getAttribute('data-lang');
     window.i18n.setLang(lang).then(highlight);
   });
-  document.addEventListener('i18n:changed', highlight);
+  document.addEventListener('i18n:changed', function () {
+    highlight();
+    // Перерисовать таблицы которые рендерятся в JS (с переведённым empty-state и т.п.)
+    if (typeof loadAll === 'function') { try { loadAll(); } catch (_) {} }
+  });
   // подгружаем язык с сервера (если сохранён в user.lang — переписываем localStorage)
   fetch('/api/user/me', { credentials: 'include' })
     .then(function (r) { return r.ok ? r.json() : null; })
