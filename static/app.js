@@ -3121,7 +3121,18 @@ function fireConfetti() {
       subtitle.innerHTML = 'Entry: <b>' + (t.entry_price || '—') + '</b> → Exit: <b>' + (t.exit_price || '—') + '</b> · ' +
         'P&L: <b style="color:' + pnlColor + '">' + pnlSign + (t.pnl_usd || 0).toFixed(2) + '$ (' + pnlSign + (t.pnl_pct || 0).toFixed(2) + '%)</b>';
       renderChart(j.candles, t);
-      meta.textContent = 'Источник: ' + j.source + ' · ' + j.candles.length + ' свечей · timeframe ' + j.tf;
+      // Человекочитаемый источник
+      const srcMap = {
+        'bitunix': 'Bitunix',
+        'bybit_fallback': 'Bybit (fallback — Bitunix недоступен)',
+        'unknown': '—'
+      };
+      const srcName = srcMap[j.source] || j.source;
+      // TradingView link — perpetual futures на Bitunix
+      const tvInterval = { '1m':'1','5m':'5','15m':'15','1h':'60','4h':'240','1d':'D' }[j.tf] || '60';
+      const tvUrl = 'https://www.tradingview.com/chart/?symbol=BITUNIX:' + t.symbol + '.P&interval=' + tvInterval;
+      meta.innerHTML = 'Источник: <b>' + srcName + '</b> · ' + j.candles.length + ' свечей · timeframe ' + j.tf +
+        ' · <a href="' + tvUrl + '" target="_blank" rel="noopener" style="color:#5a9be0;text-decoration:none;">📈 Открыть в TradingView</a>';
     } catch (e) {
       meta.textContent = 'Ошибка: ' + e.message;
     }
@@ -3186,12 +3197,11 @@ function fireConfetti() {
     if (trade.entry_ts && entryPrice) {
       markers.push({
         time: trade.entry_ts,
-        // LONG → купили, ждём рост → стрелка ВВЕРХ под баром (взгляд снизу вверх)
+        // LONG → купили, ждём рост → стрелка ВВЕРХ под баром
         // SHORT → продали, ждём падение → стрелка ВНИЗ над баром
         position: isLong ? 'belowBar' : 'aboveBar',
         color: isLong ? '#10c98a' : '#ff5a6c',
         shape: isLong ? 'arrowUp' : 'arrowDown',
-        text: 'Entry @ ' + entryPrice,
         size: 2,
       });
     }
@@ -3207,7 +3217,6 @@ function fireConfetti() {
         position: priceMoved ? 'aboveBar' : 'belowBar',
         color: pnlPositive ? '#10c98a' : '#ff5a6c',
         shape: priceMoved ? 'arrowUp' : 'arrowDown',
-        text: 'Exit @ ' + exitPrice + ' · ' + (pnlPositive ? '+' : '') + (trade.pnl_usd || 0).toFixed(2) + '$',
         size: 2,
       });
     }
