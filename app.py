@@ -2526,6 +2526,16 @@ def api_trade_chart(trade_id):
     if not candles:
         return jsonify({"ok": False, "error": f"Не удалось получить свечи. {last_err or ''}"}), 502
 
+    # Lightweight Charts требует строго возрастающий time + уникальные значения
+    seen_times = set()
+    sorted_candles = []
+    for c in sorted(candles, key=lambda x: x["time"]):
+        if c["time"] in seen_times:
+            continue
+        seen_times.add(c["time"])
+        sorted_candles.append(c)
+    candles = sorted_candles
+
     return jsonify({
         "ok": True,
         "trade": {
