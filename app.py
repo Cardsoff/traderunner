@@ -213,6 +213,7 @@ with app.app_context():
         _ensure_column("users", "email_verified", "BOOLEAN", "NOT NULL DEFAULT 1")
         _ensure_column("users", "email_verification_sent_at", "DATETIME", "")
         _ensure_column("users", "is_blocked", "BOOLEAN", "NOT NULL DEFAULT 0")
+        _ensure_column("users", "lang", "VARCHAR(8)", "NOT NULL DEFAULT 'ru'")
     except Exception as _e:
         app.logger.error(f"❌ auto-migration failed: {_e}")
 
@@ -990,6 +991,47 @@ def compute_goal_metrics():
 @_login_required
 def index():
     return render_template("index.html")
+
+
+@app.route("/api/user/lang", methods=["POST"])
+@_login_required
+def api_user_lang():
+    """Сохранить выбранный язык интерфейса. Body: {"lang": "ru" | "en"}."""
+    try:
+        body = request.get_json(silent=True) or {}
+        lang = (body.get("lang") or "").strip().lower()
+        if lang not in ("ru", "en"):
+            return jsonify({"ok": False, "error": "unsupported lang"}), 400
+        u = User.query.get(int(current_user.id))
+        if not u:
+            return jsonify({"ok": False, "error": "user not found"}), 404
+        u.lang = lang
+        db.session.commit()
+        return jsonify({"ok": True, "lang": lang})
+    except Exception as e:
+        try: db.session.rollback()
+        except Exception: pass
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/api/user/me")
+@_login_required
+def api_user_me():
+    """Профиль текущего юзера для frontend init."""
+    try:
+        u = User.query.get(int(current_user.id))
+        if not u:
+            return jsonify({"ok": False}), 404
+        return jsonify({
+            "ok": True,
+            "id": u.id,
+            "email": u.email,
+            "display_name": u.display_name,
+            "lang": getattr(u, "lang", "ru") or "ru",
+            "is_admin": bool(u.is_admin),
+        })
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
 
 
 @app.route("/api/settings", methods=["GET", "POST"])

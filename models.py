@@ -32,6 +32,8 @@ class User(db.Model, UserMixin):
     # Email verification (sec-fix 2026-05-30)
     email_verified             = Column(Boolean, default=False, nullable=False)
     email_verification_sent_at = Column(DateTime)  # для rate-limit повторной отправки
+    # i18n (2026-05-31)
+    lang = Column(String(8), default="ru", nullable=False)  # "ru" | "en"
 
     # Связи
     trades       = relationship("Trade", backref="user", cascade="all, delete-orphan")
