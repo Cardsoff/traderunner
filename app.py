@@ -2450,6 +2450,7 @@ def api_trade_chart(trade_id):
     bx_interval = tf  # bitunix принимает те же строки 1m/5m/15m/1h/4h/1d
     candles = []
     last_err = None
+    source = None  # "bitunix" если успешно, "bybit_fallback" если Bitunix упал
     try:
         resp = _requests.get(
             "https://fapi.bitunix.com/api/v1/futures/market/kline",
@@ -2480,6 +2481,8 @@ def api_trade_chart(trade_id):
                         })
                     except Exception:
                         continue
+                if candles:
+                    source = "bitunix"
             else:
                 last_err = f"Bitunix response: {str(j)[:200]}"
         else:
@@ -2518,6 +2521,8 @@ def api_trade_chart(trade_id):
                         "close": float(k[4]),
                         "volume": float(k[5]),
                     })
+                if candles:
+                    source = "bybit_fallback"
             else:
                 last_err = (last_err or "") + " | Bybit HTTP " + str(resp.status_code)
         except Exception as e:
@@ -2588,7 +2593,7 @@ def api_trade_chart(trade_id):
         },
         "candles": candles,
         "tf": tf,
-        "source": "bitunix+bybit",
+        "source": source or "unknown",
     })
 
 
