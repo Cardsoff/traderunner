@@ -561,7 +561,7 @@ function renderTradesTable() {
         const sideTag = t.side==='LONG'?'<span class="tag tag-long">LONG</span>':t.side==='SHORT'?'<span class="tag tag-short">SHORT</span>':'<span class="tag tag-manual">—</span>';
         const srcTag = t.source==='bitunix'?'<span class="tag tag-bitunix">Bitunix</span>':'<span class="tag tag-manual">Manual</span>';
         const setupTag = t.setup ? `<span class="tag tag-setup">${esc(t.setup)}</span>` : '<span class="muted">—</span>';
-        return `<tr>
+        return `<tr data-trade-id="${t.id}" data-trade-row="1" style="cursor:pointer;" title="Клик для графика монеты">
           <td>${fmtDateTime(t.ts)}</td>
           <td><b>${esc(t.symbol)||'—'}</b></td>
           <td>${sideTag}</td>
@@ -3078,4 +3078,115 @@ function fireConfetti() {
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', check);
   else check();
+})();
+
+
+// ============================================================
+// Фича Q-G: график монеты при клике на сделку (Lightweight Charts)
+// ============================================================
+(function setupTradeChart() {
+  let _chart = null;
+  let _series = null;
+  let _currentTradeId = null;
+
+  function openChartModal(tradeId) {
+    _currentTradeId = tradeId;
+    const modal = document.getElementById('tradeChartModal');
+    if (!modal) return;
+    modal.style.display = 'block';
+    loadAndRender(tradeId, document.getElementById('tcm_tf').value || '15m');
+  }
+
+  async function loadAndRender(tradeId, tf) {
+    const meta = document.getElementById('tcm_meta');
+    const title = document.getElementById('tcm_title');
+    const subtitle = document.getElementById('tcm_subtitle');
+    meta.textContent = 'Загружаю свечи…';
+    try {
+      const r = await fetch('/api/trades/' + tradeId + '/chart?tf=' + tf, {credentials: 'include'});
+      const j = await r.json();
+      if (!r.ok || !j.ok) {
+        meta.textContent = 'Ошибка: ' + (j.error || 'HTTP ' + r.status);
+        return;
+      }
+      const t = j.trade;
+      const sideEmoji = t.side === 'LONG' ? '🟢' : '🔴';
+      title.textContent = sideEmoji + ' ' + t.symbol + ' · ' + (t.side || '');
+      const pnlSign = (t.pnl_usd >= 0 ? '+' : '');
+      const pnlColor = t.pnl_usd >= 0 ? '#10c98a' : '#ff5a6c';
+      subtitle.innerHTML = 'Entry: <b>' + (t.entry_price || '—') + '</b> → Exit: <b>' + (t.exit_price || '—') + '</b> · ' +
+        'P&L: <b style="color:' + pnlColor + '">' + pnlSign + (t.pnl_usd || 0).toFixed(2) + '$ (' + pnlSign + (t.pnl_pct || 0).toFixed(2) + '%)</b>';
+      renderChart(j.candles, t);
+      meta.textContent = 'Источник: ' + j.source + ' · ' + j.candles.length + ' свечей · timeframe ' + j.tf;
+    } catch (e) {
+      meta.textContent = 'Ошибка: ' + e.message;
+    }
+  }
+
+  function renderChart(candles, trade) {
+    const container = document.getElementById('tcm_chart');
+    if (!container) return;
+    container.innerHTML = '';
+    if (!window.LightweightCharts) {
+      container.innerHTML = '<div style="padding:40px;text-align:center;color:#8a96a8;">LightweightCharts CDN не загрузился</div>';
+      return;
+    }
+    _chart = window.LightweightCharts.createChart(container, {
+      width: container.clientWidth,
+      height: 420,
+      layout: { background: { color: '#0a0e14' }, textColor: '#e5edf5' },
+      grid: { vertLines: { color: '#1f2837' }, horzLines: { color: '#1f2837' } },
+      timeScale: { timeVisible: true, secondsVisible: false, borderColor: '#1f2837' },
+      rightPriceScale: { borderColor: '#1f2837' },
+    });
+    _series = _chart.addCandlestickSeries({
+      upColor: '#10c98a', downColor: '#ff5a6c',
+      borderUpColor: '#10c98a', borderDownColor: '#ff5a6c',
+      wickUpColor: '#10c98a', wickDownColor: '#ff5a6c',
+    });
+    _series.setData(candles);
+    const markers = [];
+    if (trade.entry_ts && trade.entry_price) {
+      markers.push({
+        time: trade.entry_ts,
+        position: trade.side === 'LONG' ? 'belowBar' : 'aboveBar',
+        color: '#10c98a',
+        shape: trade.side === 'LONG' ? 'arrowUp' : 'arrowDown',
+        text: 'Entry ' + trade.entry_price,
+      });
+    }
+    if (trade.exit_ts && trade.exit_price) {
+      const pnlPositive = (trade.pnl_usd || 0) >= 0;
+      markers.push({
+        time: trade.exit_ts,
+        position: 'aboveBar',
+        color: pnlPositive ? '#10c98a' : '#ff5a6c',
+        shape: 'square',
+        text: 'Exit ' + trade.exit_price + ' · ' + (pnlPositive ? '+' : '') + (trade.pnl_usd || 0).toFixed(2) + '$',
+      });
+    }
+    _series.setMarkers(markers);
+    _chart.timeScale().fitContent();
+  }
+
+  document.addEventListener('change', (e) => {
+    if (e.target && e.target.id === 'tcm_tf' && _currentTradeId) {
+      loadAndRender(_currentTradeId, e.target.value);
+    }
+  });
+
+  // Делегирование кликов на <tr data-trade-row="1">, кроме delete/note/buttons/inputs
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('[data-del-trade]')) return;
+    if (e.target.closest('.trade-note-cell')) return;
+    if (e.target.closest('button') || e.target.closest('a')) return;
+    if (e.target.closest('input') || e.target.closest('select') || e.target.closest('textarea')) return;
+    const row = e.target.closest('tr[data-trade-row="1"]');
+    if (row) {
+      const id = parseInt(row.getAttribute('data-trade-id'));
+      if (id) openChartModal(id);
+    }
+  });
+
+  window.openTradeChart = openChartModal;
 })();
