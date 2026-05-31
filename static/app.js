@@ -3149,24 +3149,66 @@ function fireConfetti() {
       wickUpColor: '#10c98a', wickDownColor: '#ff5a6c',
     });
     _series.setData(candles);
-    const markers = [];
-    if (trade.entry_ts && trade.entry_price) {
-      markers.push({
-        time: trade.entry_ts,
-        position: trade.side === 'LONG' ? 'belowBar' : 'aboveBar',
-        color: '#10c98a',
-        shape: trade.side === 'LONG' ? 'arrowUp' : 'arrowDown',
-        text: 'Entry ' + trade.entry_price,
+
+    const isLong = trade.side === 'LONG';
+    const pnlPositive = (trade.pnl_usd || 0) >= 0;
+    const entryPrice = +trade.entry_price || null;
+    const exitPrice = +trade.exit_price || null;
+
+    // --- Горизонтальные ценовые линии (как в TradingView) ---
+    // Entry line — синяя пунктирная на уровне цены входа
+    if (entryPrice) {
+      _series.createPriceLine({
+        price: entryPrice,
+        color: '#5a9be0',
+        lineWidth: 1,
+        lineStyle: window.LightweightCharts.LineStyle.Dashed,
+        axisLabelVisible: true,
+        title: (isLong ? '▲ ' : '▼ ') + 'Entry ' + entryPrice,
       });
     }
-    if (trade.exit_ts && trade.exit_price) {
-      const pnlPositive = (trade.pnl_usd || 0) >= 0;
+    // Exit line — цвет по P&L
+    if (exitPrice) {
+      _series.createPriceLine({
+        price: exitPrice,
+        color: pnlPositive ? '#10c98a' : '#ff5a6c',
+        lineWidth: 1,
+        lineStyle: window.LightweightCharts.LineStyle.Dashed,
+        axisLabelVisible: true,
+        title: 'Exit ' + exitPrice + ' · ' + (pnlPositive ? '+' : '') + (trade.pnl_usd || 0).toFixed(2) + '$',
+      });
+    }
+
+    // --- Маркеры-стрелки в баре входа/выхода ---
+    // Логика: stрелка направлена в сторону ожидаемого движения для entry
+    // и в сторону "куда ушла цена" для exit
+    const markers = [];
+    if (trade.entry_ts && entryPrice) {
+      markers.push({
+        time: trade.entry_ts,
+        // LONG → купили, ждём рост → стрелка ВВЕРХ под баром (взгляд снизу вверх)
+        // SHORT → продали, ждём падение → стрелка ВНИЗ над баром
+        position: isLong ? 'belowBar' : 'aboveBar',
+        color: isLong ? '#10c98a' : '#ff5a6c',
+        shape: isLong ? 'arrowUp' : 'arrowDown',
+        text: 'Entry @ ' + entryPrice,
+        size: 2,
+      });
+    }
+    if (trade.exit_ts && exitPrice) {
+      // Exit стрелка зависит от стороны сделки + результата.
+      // LONG: pnlPositive → цена выросла → стрелка ВВЕРХ зелёная
+      //       pnlNegative → цена упала   → стрелка ВНИЗ красная
+      // SHORT: pnlPositive → цена упала   → стрелка ВНИЗ зелёная
+      //        pnlNegative → цена выросла → стрелка ВВЕРХ красная
+      const priceMoved = exitPrice > entryPrice;  // вверх ли пошла цена
       markers.push({
         time: trade.exit_ts,
-        position: 'aboveBar',
+        position: priceMoved ? 'aboveBar' : 'belowBar',
         color: pnlPositive ? '#10c98a' : '#ff5a6c',
-        shape: 'square',
-        text: 'Exit ' + trade.exit_price + ' · ' + (pnlPositive ? '+' : '') + (trade.pnl_usd || 0).toFixed(2) + '$',
+        shape: priceMoved ? 'arrowUp' : 'arrowDown',
+        text: 'Exit @ ' + exitPrice + ' · ' + (pnlPositive ? '+' : '') + (trade.pnl_usd || 0).toFixed(2) + '$',
+        size: 2,
       });
     }
     _series.setMarkers(markers);
