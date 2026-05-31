@@ -2414,7 +2414,7 @@ def api_trade_chart(trade_id):
     tf = (request.args.get("tf") or "15m").lower()
     if tf not in ("1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "1d"):
         tf = "15m"
-    bars_before = max(10, min(300, int(request.args.get("bars_before") or 150)))
+    bars_before = max(10, min(500, int(request.args.get("bars_before") or 250)))
     bars_after  = max(10, min(100, int(request.args.get("bars_after")  or 30)))
 
     # Парсим время сделки (ISO string)
@@ -2458,7 +2458,7 @@ def api_trade_chart(trade_id):
                 "interval": bx_interval,
                 "startTime": start_ms,
                 "endTime": end_ms,
-                "limit": 500,
+                "limit": 1000,
             },
             timeout=10,
             headers={"User-Agent": "TradeRunner/4.1"},
