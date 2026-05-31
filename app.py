@@ -2414,8 +2414,8 @@ def api_trade_chart(trade_id):
     tf = (request.args.get("tf") or "15m").lower()
     if tf not in ("1m", "3m", "5m", "15m", "30m", "1h", "2h", "4h", "1d"):
         tf = "15m"
-    bars_before = max(10, min(200, int(request.args.get("bars_before") or 50)))
-    bars_after  = max(10, min(200, int(request.args.get("bars_after")  or 50)))
+    bars_before = max(10, min(300, int(request.args.get("bars_before") or 150)))
+    bars_after  = max(10, min(100, int(request.args.get("bars_after")  or 30)))
 
     # Парсим время сделки (ISO string)
     from datetime import datetime as _dt, timedelta as _td
@@ -2536,6 +2536,23 @@ def api_trade_chart(trade_id):
         sorted_candles.append(c)
     candles = sorted_candles
 
+    # trade.ts = close_time (момент закрытия). exit_ts = entry_dt.timestamp().
+    # entry_ts алгоритмически ищем: первая свеча ДО close где цена касалась entry_price.
+    exit_ts_val = int(entry_dt.timestamp())
+    entry_ts_val = exit_ts_val  # default = close (плохо, но fallback)
+    try:
+        entry_price_f = float(trade.get("entry_price") or 0)
+        if entry_price_f > 0 and candles:
+            # Идём с конца (от close) назад, ищем свечу где low <= entry_price <= high
+            for c in reversed(candles):
+                if c["time"] >= exit_ts_val:
+                    continue  # после close — игнорим
+                if c["low"] <= entry_price_f <= c["high"]:
+                    entry_ts_val = c["time"]
+                    break
+    except Exception:
+        pass
+
     return jsonify({
         "ok": True,
         "trade": {
@@ -2544,8 +2561,8 @@ def api_trade_chart(trade_id):
             "side": trade.get("side"),
             "entry_price": trade.get("entry_price"),
             "exit_price":  trade.get("exit_price"),
-            "entry_ts": int(entry_dt.timestamp()),
-            "exit_ts":  int(entry_dt.timestamp()),  # пока используем entry — exact exit_ts добавим позже
+            "entry_ts": entry_ts_val,
+            "exit_ts":  exit_ts_val,
             "pnl_usd": trade.get("pnl_usd"),
             "pnl_pct": trade.get("pnl_pct"),
             "qty": trade.get("qty"),
