@@ -3094,7 +3094,11 @@ function fireConfetti() {
     const modal = document.getElementById('tradeChartModal');
     if (!modal) return;
     modal.style.display = 'block';
-    loadAndRender(tradeId, document.getElementById('tcm_tf').value || '15m');
+    // Если у пользователя ещё дефолт 15m — на больших сделках мало контекста.
+    // Default: 1h (показывает несколько суток истории — лучше для swing-trades)
+    const tfEl = document.getElementById('tcm_tf');
+    if (tfEl && tfEl.value === '15m') tfEl.value = '1h';
+    loadAndRender(tradeId, (tfEl && tfEl.value) || '1h');
   }
 
   async function loadAndRender(tradeId, tf) {
