@@ -2553,6 +2553,23 @@ def api_trade_chart(trade_id):
     except Exception:
         pass
 
+    # Snap timestamps к ближайшей свече — Lightweight Charts падает с "Value is null"
+    # если marker.time не совпадает ни с одним candle.time
+    def _snap_to_candle(ts, candles_list):
+        if not candles_list or ts is None:
+            return ts
+        best = candles_list[0]["time"]
+        best_diff = abs(ts - best)
+        for c in candles_list:
+            d = abs(ts - c["time"])
+            if d < best_diff:
+                best_diff = d
+                best = c["time"]
+        return best
+
+    entry_ts_val = _snap_to_candle(entry_ts_val, candles)
+    exit_ts_val = _snap_to_candle(exit_ts_val, candles)
+
     return jsonify({
         "ok": True,
         "trade": {
