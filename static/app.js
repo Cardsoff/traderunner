@@ -3245,3 +3245,35 @@ function fireConfetti() {
 
   window.openTradeChart = openChartModal;
 })();
+
+// ===== i18n: переключатель RU/EN =====
+(function () {
+  function highlight() {
+    const cur = (window.i18n && window.i18n.getLang()) || 'ru';
+    document.querySelectorAll('.btn-lang').forEach(function (b) {
+      b.style.opacity = (b.getAttribute('data-lang') === cur) ? '1' : '0.6';
+      b.style.background = (b.getAttribute('data-lang') === cur) ? 'rgba(90,155,224,0.18)' : 'transparent';
+      b.style.fontWeight = (b.getAttribute('data-lang') === cur) ? '600' : '400';
+    });
+  }
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.btn-lang');
+    if (!btn || !window.i18n) return;
+    const lang = btn.getAttribute('data-lang');
+    window.i18n.setLang(lang).then(highlight);
+  });
+  document.addEventListener('i18n:changed', highlight);
+  // подгружаем язык с сервера (если сохранён в user.lang — переписываем localStorage)
+  fetch('/api/user/me', { credentials: 'include' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) {
+      if (!d || !d.ok || !d.lang) return;
+      const cur = localStorage.getItem('tr_lang');
+      if (cur !== d.lang && window.i18n) window.i18n.setLang(d.lang).then(highlight);
+      else highlight();
+    })
+    .catch(function () { highlight(); });
+  // первичная подсветка после загрузки i18n
+  document.addEventListener('DOMContentLoaded', highlight);
+  setTimeout(highlight, 500);
+})();
