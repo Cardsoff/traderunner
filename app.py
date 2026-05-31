@@ -2443,38 +2443,88 @@ def api_trade_chart(trade_id):
     if not symbol:
         return jsonify({"ok": False, "error": "У сделки нет symbol"}), 400
 
-    # Binance kline interval — те же строки что мы поддерживаем
+    # Bitunix klines (наш родной exchange) — формат:
+    # GET https://fapi.bitunix.com/api/v1/futures/market/kline?symbol=BTCUSDT&interval=15m&startTime=...&endTime=...&limit=...
+    # Возвращает {"code":0,"data":[{"time","open","high","low","close","baseVol","quoteVol"}]}
+    # Маппинг наших tf к Bitunix interval
+    bx_interval = tf  # bitunix принимает те же строки 1m/5m/15m/1h/4h/1d
+    candles = []
+    last_err = None
     try:
         resp = _requests.get(
-            "https://api.binance.com/api/v3/klines",
+            "https://fapi.bitunix.com/api/v1/futures/market/kline",
             params={
                 "symbol": symbol,
-                "interval": tf,
+                "interval": bx_interval,
                 "startTime": start_ms,
                 "endTime": end_ms,
-                "limit": 1000,
+                "limit": 500,
             },
             timeout=10,
-            headers={"User-Agent": "TradeRunner/4.1 (+https://github.com/Cardsoff/traderunner)"},
+            headers={"User-Agent": "TradeRunner/4.1"},
         )
-        if resp.status_code != 200:
-            return jsonify({"ok": False, "error": f"Binance HTTP {resp.status_code}: {resp.text[:200]}"}), 502
-        raw = resp.json()
+        if resp.status_code == 200:
+            j = resp.json()
+            if j.get("code") in (0, "0") and j.get("data"):
+                data = j["data"]
+                # Bitunix отдаёт строки или числа в зависимости от поля
+                for k in data:
+                    try:
+                        candles.append({
+                            "time":  int(int(k.get("time", 0)) // 1000) if int(k.get("time", 0)) > 10**12 else int(k.get("time", 0)),
+                            "open":  float(k.get("open",  k.get("o", 0))),
+                            "high":  float(k.get("high",  k.get("h", 0))),
+                            "low":   float(k.get("low",   k.get("l", 0))),
+                            "close": float(k.get("close", k.get("c", 0))),
+                            "volume": float(k.get("baseVol", k.get("v", 0))),
+                        })
+                    except Exception:
+                        continue
+            else:
+                last_err = f"Bitunix response: {str(j)[:200]}"
+        else:
+            last_err = f"Bitunix HTTP {resp.status_code}: {resp.text[:200]}"
     except Exception as e:
-        return jsonify({"ok": False, "error": f"Binance fetch failed: {e}"}), 502
+        last_err = f"Bitunix fetch failed: {e}"
 
-    # Преобразуем в формат Lightweight Charts: {time, open, high, low, close, volume}
-    candles = []
-    for k in raw:
-        # k = [openTime_ms, open, high, low, close, volume, closeTime_ms, ...]
-        candles.append({
-            "time": int(k[0] // 1000),  # Lightweight Charts: unix seconds
-            "open":  float(k[1]),
-            "high":  float(k[2]),
-            "low":   float(k[3]),
-            "close": float(k[4]),
-            "volume": float(k[5]),
-        })
+    # Fallback на Bybit public klines если Bitunix не вернул данных
+    if not candles:
+        try:
+            # Bybit category=linear для USDT perpetuals
+            bybit_iv = {"1m":"1","3m":"3","5m":"5","15m":"15","30m":"30","1h":"60","2h":"120","4h":"240","1d":"D"}.get(tf, "15")
+            resp = _requests.get(
+                "https://api.bybit.com/v5/market/kline",
+                params={
+                    "category": "linear",
+                    "symbol": symbol,
+                    "interval": bybit_iv,
+                    "start": start_ms,
+                    "end": end_ms,
+                    "limit": 500,
+                },
+                timeout=10,
+                headers={"User-Agent": "TradeRunner/4.1"},
+            )
+            if resp.status_code == 200:
+                j = resp.json()
+                rows = (j.get("result") or {}).get("list") or []
+                # Bybit отдаёт в reverse order (newest first), нужны seconds
+                for k in reversed(rows):
+                    candles.append({
+                        "time":  int(int(k[0]) // 1000),
+                        "open":  float(k[1]),
+                        "high":  float(k[2]),
+                        "low":   float(k[3]),
+                        "close": float(k[4]),
+                        "volume": float(k[5]),
+                    })
+            else:
+                last_err = (last_err or "") + " | Bybit HTTP " + str(resp.status_code)
+        except Exception as e:
+            last_err = (last_err or "") + " | Bybit failed: " + str(e)
+
+    if not candles:
+        return jsonify({"ok": False, "error": f"Не удалось получить свечи. {last_err or ''}"}), 502
 
     return jsonify({
         "ok": True,
@@ -2494,7 +2544,7 @@ def api_trade_chart(trade_id):
         },
         "candles": candles,
         "tf": tf,
-        "source": "binance_public",
+        "source": "bitunix+bybit",
     })
 
 
