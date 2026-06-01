@@ -1683,18 +1683,9 @@ table { border-collapse: collapse; width: 100%; }
 .stat-value, .tm-score {
   font-variant-numeric: tabular-nums;
 }
-/* Trade table — JetBrains Mono для P&L / entry / exit / qty */
-.trades-table td.tnum, .trades-table td[data-num] {
-  font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
-}
-/* Универсально для всех числовых столбцов trades таблицы */
-.trades-table tbody td:nth-child(4), /* Entry */
-.trades-table tbody td:nth-child(5), /* Exit */
-.trades-table tbody td:nth-child(6), /* Size */
-.trades-table tbody td:nth-child(7)  /* P&L */ {
-  font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+/* Trade table numeric cells — class .cell-num */
+.data-table td.cell-num, .data-table th.cell-num {
+  font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace !important;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }
