@@ -396,5 +396,22 @@
     "tooltip_trades_one": "{0} сделка",
     "tooltip_trades_few": "{0} сделки",
     "tooltip_trades_many": "{0} сделок"
+  },
+  "tilt": {
+    "calm": "Calm",
+    "heating": "Heating up",
+    "tilt": "Tilt — stop",
+    "no_trades": "Пока нет сделок · начни когда готов",
+    "all_good": "Всё хорошо · торгуешь по плану",
+    "loss_streak": "{0} убытков подряд",
+    "revenge": "{0} revenge-сделок",
+    "revenge_one": "revenge-сделка",
+    "size_up_multi": "size +30%+ после убытка ×{0}",
+    "size_up_one": "size +30%+ после убытка",
+    "overtrading_n": "{0} сделок за последний час",
+    "overtrading_3": "3 сделки за последний час",
+    "advice_calm": "",
+    "advice_heating": "⚠ Возьми паузу 1-2 часа",
+    "advice_tilt": "🛑 Закрой терминал на сегодня"
   }
 }

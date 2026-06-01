@@ -396,5 +396,22 @@
     "tooltip_trades_one": "{0} trade",
     "tooltip_trades_few": "{0} trades",
     "tooltip_trades_many": "{0} trades"
+  },
+  "tilt": {
+    "calm": "Calm",
+    "heating": "Heating up",
+    "tilt": "Tilt — stop",
+    "no_trades": "No trades yet · Start when ready",
+    "all_good": "All good · trading by plan",
+    "loss_streak": "{0} losses in row",
+    "revenge": "{0} revenge trades",
+    "revenge_one": "revenge trade",
+    "size_up_multi": "size +30%+ after loss ×{0}",
+    "size_up_one": "size +30%+ after loss",
+    "overtrading_n": "{0} trades in last hour",
+    "overtrading_3": "3 trades in last hour",
+    "advice_calm": "",
+    "advice_heating": "⚠ Take a 1-2h break",
+    "advice_tilt": "🛑 Close terminal for today"
   }
 }
