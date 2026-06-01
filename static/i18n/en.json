@@ -375,5 +375,26 @@
     "stat_block": "📊 Trade stats",
     "new_setup_ph": "new setup (range, FVG, OB...)",
     "creds_keep_current": "leave empty to keep current"
+  },
+  "streak": {
+    "title": "🔥 Streak Calendar",
+    "sub": "Daily P&L · click a day for details",
+    "tab_goal": "Goal",
+    "tab_30d": "30D",
+    "tab_90d": "90D",
+    "tab_365d": "365D",
+    "best": "Best streak",
+    "worst": "Worst streak",
+    "now": "Current",
+    "now_win": "+{0} wins",
+    "now_loss": "−{0} losses",
+    "now_none": "—",
+    "less": "Less",
+    "more": "More",
+    "no_trades_hint": "Hover a day to see trades and P&L.",
+    "tooltip_no_trades": "no trades",
+    "tooltip_trades_one": "{0} trade",
+    "tooltip_trades_few": "{0} trades",
+    "tooltip_trades_many": "{0} trades"
   }
 }
