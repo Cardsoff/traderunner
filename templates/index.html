@@ -182,35 +182,31 @@
     <div class="op-list" id="opList"></div>
   </section>
 
-  <!-- Графики План/Факт -->
-  <section class="charts-grid">
-    <div class="card">
-      <div class="card-header">
-        <div><div class="card-title" data-i18n="equity.growth">Рост капитала</div><div class="card-sub" data-i18n="equity.plan_vs_fact">План vs Факт</div></div>
-        <div class="legend"><div class="legend-item"><span class="ldot dot-plan"></span><span data-i18n="equity.plan">План</span></div><div class="legend-item"><span class="ldot dot-fact"></span><span data-i18n="equity.fact">Факт</span></div></div>
+  <!-- Equity merged (Iter 2B): один блок с табами Growth / Monthly% / Daily curve -->
+  <section class="card equity-merged" id="equityMergedCard">
+    <div class="card-header equity-tabs-header">
+      <div class="equity-tabs" role="tablist">
+        <button class="eq-tab active" data-eq-tab="growth"><span data-i18n="equity.growth">Рост капитала</span></button>
+        <button class="eq-tab" data-eq-tab="returns"><span data-i18n="equity.monthly_yield">Месячная доходность %</span></button>
+        <button class="eq-tab" data-eq-tab="daily"><span data-i18n="equity.curve_title">📈 Equity curve · по дням</span></button>
       </div>
+      <div class="legend" id="equityLegend">
+        <div class="legend-item"><span class="ldot dot-plan"></span><span data-i18n="equity.plan">План</span></div>
+        <div class="legend-item"><span class="ldot dot-fact"></span><span data-i18n="equity.fact">Факт</span></div>
+      </div>
+    </div>
+    <div class="equity-pane" data-eq-pane="growth" style="display:block;">
       <div class="chart-container"><canvas id="growthChart"></canvas></div>
     </div>
-    <div class="card">
-      <div class="card-header">
-        <div><div class="card-title" data-i18n="equity.monthly_yield">Месячная доходность %</div><div class="card-sub" data-i18n="equity.plan_vs_fact">План vs Факт</div></div>
-        <div class="legend"><div class="legend-item"><span class="ldot dot-plan"></span><span data-i18n="equity.plan">План</span></div><div class="legend-item"><span class="ldot dot-fact"></span><span data-i18n="equity.fact">Факт</span></div></div>
-      </div>
+    <div class="equity-pane" data-eq-pane="returns" style="display:none;">
       <div class="chart-container"><canvas id="returnsChart"></canvas></div>
     </div>
-  </section>
-
-  <!-- #2 #3: Equity curve по дням + Underwater plot -->
-  <section class="card" id="equityDailyCard" style="margin-bottom:14px; display:none;">
-    <div class="card-header">
-      <div><div class="card-title" data-i18n="equity.curve_title">📈 Equity curve · по дням</div><div class="card-sub" data-i18n="equity.curve_sub">Дневной баланс и просадка в рамках активной цели</div></div>
-      <div class="legend">
-        <div class="legend-item"><span class="ldot" style="background:#10c98a;"></span>Equity</div>
-        <div class="legend-item"><span class="ldot" style="background:#ff5a6c;"></span>Drawdown %</div>
-      </div>
+    <div class="equity-pane" data-eq-pane="daily" style="display:none;">
+      <div class="chart-container" style="height: 280px;"><canvas id="equityDailyChart"></canvas></div>
     </div>
-    <div class="chart-container" style="height: 280px;"><canvas id="equityDailyChart"></canvas></div>
   </section>
+  <!-- Legacy id для совместимости с JS, который ищет #equityDailyCard для toggle visibility -->
+  <div id="equityDailyCard" style="display:none;"></div>
 
   <!-- ОДИН блок статистики сделок за выбранный период -->
   <div class="section-head section-head-with-dates">
