@@ -52,7 +52,9 @@
     "placeholder_no_goal": "🎯 Set your goal — click ✏ and fill in the amount, return and monthly deposit",
     "placeholder_no_trades": "📭 No trades within this goal yet. Open your first trade — stats for this goal will appear here.",
     "active_since": "Goal active since {0}",
-    "pace_waiting": "📊 Pace: waiting for data"
+    "pace_waiting": "📊 Pace: waiting for data",
+    "forecast_months": "in {0} months",
+    "forecast_already": "already"
   },
   "equity": {
     "title": "Equity growth",
