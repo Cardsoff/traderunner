@@ -2473,6 +2473,131 @@ def api_tiltmeter():
     })
 
 
+@app.route("/api/analytics/monthly-calendar")
+@_login_required
+def api_monthly_calendar():
+    """
+    Tradezella-style monthly P&L calendar.
+    Query: ?month=YYYY-MM (default: current month) + ?setup=<name> (optional)
+    Returns: {month, weeks: [[{day, in_month, trades, net_pnl, intensity}]], setups_used: [], total_trades, total_pnl}
+    """
+    from datetime import datetime as _dt, date as _date, timedelta as _td
+    from calendar import monthrange as _monthrange
+    arg_m = (request.args.get("month") or "").strip()
+    setup_filter = (request.args.get("setup") or "").strip()
+
+    today = _date.today()
+    if arg_m:
+        try:
+            y, m = arg_m.split("-")
+            year, month = int(y), int(m)
+        except Exception:
+            year, month = today.year, today.month
+    else:
+        year, month = today.year, today.month
+
+    first_day = _date(year, month, 1)
+    last_day = _date(year, month, _monthrange(year, month)[1])
+
+    # Загружаем сделки
+    all_trades = db.list_trades(user_id=int(current_user.id))
+
+    # Группируем по дате
+    from collections import defaultdict as _dd
+    by_date = _dd(lambda: {"trades": 0, "pnl": 0.0, "fee": 0.0, "setups": set()})
+    setups_used = set()
+    for t in all_trades:
+        try:
+            ts = t.get("ts")
+            if isinstance(ts, str):
+                d = _parse_date(ts).date()
+            else:
+                d = ts.date() if hasattr(ts, "date") else _parse_date(str(ts)).date()
+            stp = (t.get("setup") or "").strip()
+            if stp:
+                setups_used.add(stp)
+            # Setup filter
+            if setup_filter and stp != setup_filter:
+                continue
+            if d < first_day or d > last_day:
+                continue
+            key = d.isoformat()
+            by_date[key]["trades"] += 1
+            by_date[key]["pnl"] += float(t.get("pnl_usd") or 0)
+            by_date[key]["fee"] += float(t.get("fee_usd") or 0)
+            if stp: by_date[key]["setups"].add(stp)
+        except Exception:
+            continue
+
+    # Считаем процентиль для интенсивности
+    nets = []
+    for b in by_date.values():
+        if b["trades"] > 0:
+            nets.append(abs(b["pnl"] - b["fee"]))
+    if nets:
+        nets_sorted = sorted(nets)
+        # max в выборке (для нормализации интенсивности 0..1)
+        max_abs = nets_sorted[-1] if nets_sorted else 1.0
+    else:
+        max_abs = 1.0
+
+    # Строим недели (понедельник = первый день)
+    # Найти понедельник недели, в которой first_day
+    first_weekday = first_day.weekday()  # 0=Monday
+    grid_start = first_day - _td(days=first_weekday)
+    # Найти воскресенье недели, в которой last_day
+    last_weekday = last_day.weekday()
+    grid_end = last_day + _td(days=(6 - last_weekday))
+
+    weeks = []
+    cur = grid_start
+    total_trades = 0
+    total_pnl = 0.0
+    while cur <= grid_end:
+        week = []
+        for _ in range(7):
+            key = cur.isoformat()
+            in_month = (cur.month == month)
+            cell = {
+                "day": cur.day,
+                "date": key,
+                "in_month": in_month,
+                "trades": 0,
+                "net_pnl": 0.0,
+                "intensity": 0.0,
+                "sign": "none",
+            }
+            if in_month and key in by_date:
+                b = by_date[key]
+                net = round(b["pnl"] - b["fee"], 2)
+                cell["trades"] = b["trades"]
+                cell["net_pnl"] = net
+                cell["intensity"] = min(1.0, abs(net) / max_abs) if max_abs > 0 else 0.0
+                cell["sign"] = "pos" if net > 0 else ("neg" if net < 0 else "zero")
+                total_trades += b["trades"]
+                total_pnl += net
+            week.append(cell)
+            cur += _td(days=1)
+        weeks.append(week)
+
+    # Prev/next month
+    prev_m = (first_day - _td(days=1))
+    next_first = (last_day + _td(days=1))
+    return jsonify({
+        "ok": True,
+        "month": f"{year:04d}-{month:02d}",
+        "month_name": first_day.strftime("%B %Y"),
+        "prev_month": f"{prev_m.year:04d}-{prev_m.month:02d}",
+        "next_month": f"{next_first.year:04d}-{next_first.month:02d}",
+        "weeks": weeks,
+        "setups_used": sorted(list(setups_used)),
+        "active_setup": setup_filter or "",
+        "total_trades": total_trades,
+        "total_pnl": round(total_pnl, 2),
+        "max_abs": round(max_abs, 2),
+    })
+
+
 @app.route("/api/analytics/streak-calendar")
 @_login_required
 def api_streak_calendar():
