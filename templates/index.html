@@ -57,6 +57,22 @@
   </div>
 </nav>
 
+<!-- Tiltmeter sticky bar (Iter R1) — состояние трейдера сейчас, всегда выше fold -->
+<section class="tiltmeter-bar tm-calm" id="tiltmeterBar">
+  <div class="tm-state">
+    <span class="tm-dot"></span>
+    <span class="tm-label" id="tmLabel">Calm</span>
+  </div>
+  <div class="tm-track" id="tmTrack">
+    <div class="tm-fill" id="tmFill" style="width:5%;"></div>
+    <div class="tm-marker" id="tmMarker" style="left:5%;"></div>
+    <span class="tm-score" id="tmScore">5</span>
+  </div>
+  <div class="tm-reasons" id="tmReasons">
+    <span class="tm-chip">No trades yet · Start when ready</span>
+  </div>
+</section>
+
 <main class="container">
   <div class="goal-achieved" id="goalAchievedBanner">
     <div class="ga-text">
@@ -101,10 +117,6 @@
         <div class="gca-eyebrow" data-i18n="goal.target">Цель</div>
         <div class="gca-value" id="goalAmount">$0</div>
       </div>
-      <div class="gca-progress">
-        <div class="gca-pct" id="goalPctBig">0%</div>
-        <div class="gca-pct-label" data-i18n="goal.progress_label">прогресс</div>
-      </div>
     </div>
 
     <div class="progress-wrap">
@@ -112,6 +124,11 @@
         <div class="progress-bar" id="progressBar" style="width:0%"></div>
       </div>
       <div class="checkpoints" id="checkpoints"></div>
+    </div>
+
+    <div class="gca-progress-hero">
+      <div class="gca-pct" id="goalPctBig">0%</div>
+      <div class="gca-pct-label" data-i18n="goal.progress_label">прогресс</div>
     </div>
 
     <div class="goal-card-footer">
