@@ -975,12 +975,22 @@ def compute_goal_metrics():
         if dd > max_dd_abs: max_dd_abs = dd
     base = max(float(get_effective_start_capital() or 0), 1.0)
     mdd_pct = min(max_dd_abs / (base + peak) * 100 if (base + peak) > 0 else 0, 100.0)
+    # Profit Factor = gross profit / gross loss
+    gross_profit = sum(float(t["pnl_usd"] or 0) for t in trades if (t["pnl_usd"] or 0) > 0)
+    gross_loss = abs(sum(float(t["pnl_usd"] or 0) for t in trades if (t["pnl_usd"] or 0) < 0))
+    if gross_loss > 0:
+        pf = round(gross_profit / gross_loss, 2)
+    elif gross_profit > 0:
+        pf = None  # infinity → frontend покажет '∞'
+    else:
+        pf = 0.0
     return {
         "is_empty_for_goal": False,
         "goal_start": goal.get("created_at"),
         "total": total, "wins": wins, "losses": losses,
         "winrate": round(winrate, 1),
         "net_pnl": round(net, 2),
+        "profit_factor": pf,
         "best_win": streak["best_win"], "best_loss": streak["best_loss"],
         "current_kind": streak["current_kind"], "current_count": streak["current_count"],
         "max_drawdown": round(mdd_pct, 2),
