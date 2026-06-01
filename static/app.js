@@ -3259,6 +3259,103 @@ function fireConfetti() {
   window.openTradeChart = openChartModal;
 })();
 
+// ===== Tiltmeter logic (Iter R2) =====
+(function () {
+  function fmtReason(r) {
+    if (!window.t) return r.text;
+    const k = r.key;
+    if (k === 'no_trades') return t('tilt.no_trades');
+    if (k === 'all_good') return t('tilt.all_good');
+    if (k === 'loss_streak') {
+      const m = r.text.match(/(\d+)/);
+      const n = m ? parseInt(m[1]) : 2;
+      return t('tilt.loss_streak', n);
+    }
+    if (k === 'revenge') {
+      const m = r.text.match(/(\d+)/);
+      const n = m ? parseInt(m[1]) : 1;
+      return n === 1 ? t('tilt.revenge_one') : t('tilt.revenge', n);
+    }
+    if (k === 'size_up') {
+      const m = r.text.match(/x(\d+)/);
+      const n = m ? parseInt(m[1]) : 1;
+      return n > 1 ? t('tilt.size_up_multi', n) : t('tilt.size_up_one');
+    }
+    if (k === 'overtrading') {
+      const m = r.text.match(/(\d+)/);
+      const n = m ? parseInt(m[1]) : 3;
+      return n === 3 ? t('tilt.overtrading_3') : t('tilt.overtrading_n', n);
+    }
+    return r.text;
+  }
+
+  async function loadTilt() {
+    const bar = document.getElementById('tiltmeterBar');
+    if (!bar) return;
+    try {
+      const r = await fetch('/api/analytics/tiltmeter', {credentials:'include'});
+      const d = await r.json();
+      if (!r.ok || !d.ok) return;
+
+      // class state
+      bar.classList.remove('tm-calm','tm-heating','tm-tilt');
+      bar.classList.add('tm-' + d.kind);
+
+      // label
+      const labelEl = document.getElementById('tmLabel');
+      if (labelEl) {
+        if (d.kind === 'calm') labelEl.textContent = (window.t ? t('tilt.calm') : 'Calm');
+        else if (d.kind === 'heating') labelEl.textContent = (window.t ? t('tilt.heating') : 'Heating up');
+        else labelEl.textContent = (window.t ? t('tilt.tilt') : 'Tilt — stop');
+      }
+
+      // score + marker + fill
+      const pct = Math.max(2, Math.min(98, d.score));
+      const fillEl = document.getElementById('tmFill');
+      const markerEl = document.getElementById('tmMarker');
+      const scoreEl = document.getElementById('tmScore');
+      if (fillEl) fillEl.style.width = pct + '%';
+      if (markerEl) markerEl.style.left = pct + '%';
+      if (scoreEl) { scoreEl.style.left = pct + '%'; scoreEl.textContent = d.score; }
+
+      // reasons + advice
+      const reasonsEl = document.getElementById('tmReasons');
+      if (reasonsEl) {
+        const chips = (d.reasons || []).map(r => '<span class="tm-chip">' + fmtReason(r) + '</span>').join('');
+        // advice
+        let advice = '';
+        if (window.t) {
+          if (d.kind === 'heating') advice = ' <span class="tm-chip" style="background:rgba(240,180,41,0.18);border-color:rgba(240,180,41,0.50);font-weight:600;">' + t('tilt.advice_heating') + '</span>';
+          else if (d.kind === 'tilt') advice = ' <span class="tm-chip" style="background:rgba(255,107,122,0.18);border-color:rgba(255,107,122,0.50);font-weight:600;">' + t('tilt.advice_tilt') + '</span>';
+        }
+        reasonsEl.innerHTML = chips + advice;
+      }
+    } catch (e) { /* silent */ }
+  }
+
+  // Init после 500мс
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(loadTilt, 600); });
+  } else {
+    setTimeout(loadTilt, 600);
+  }
+  // Перезагружать после loadAll (Sync)
+  if (typeof window !== 'undefined') {
+    const orig = window.loadAll;
+    if (typeof orig === 'function') {
+      window.loadAll = async function () {
+        const r = await orig.apply(this, arguments);
+        loadTilt();
+        return r;
+      };
+    }
+  }
+  // Перезагружать при смене языка (для перевода reasons)
+  document.addEventListener('i18n:changed', loadTilt);
+  // Auto-refresh каждые 60 сек (актуальность score)
+  setInterval(loadTilt, 60000);
+})();
+
 // ===== Streak Calendar (Iter 3) =====
 (function () {
   let _scope = 'goal';
