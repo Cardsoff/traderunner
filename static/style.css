@@ -760,6 +760,86 @@ table { border-collapse: collapse; width: 100%; }
 .gcm-value.pos { color: var(--green); }
 .gcm-value.neg { color: var(--red); }
 
+/* === Tiltmeter sticky bar (Iter R1) — состояние трейдера сейчас === */
+.tiltmeter-bar {
+  display: grid;
+  grid-template-columns: 140px 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 8px 22px;
+  min-height: 48px;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  transition: background 0.3s, border-color 0.3s;
+}
+.tiltmeter-bar.tm-calm { background: rgba(58,169,122,0.04); border-color: rgba(58,169,122,0.18); }
+.tiltmeter-bar.tm-heating { background: rgba(240,180,41,0.06); border-color: rgba(240,180,41,0.32); }
+.tiltmeter-bar.tm-tilt { background: rgba(255,90,108,0.07); border-color: rgba(255,90,108,0.40); animation: tm-pulse 2s infinite; }
+@keyframes tm-pulse {
+  0%, 100% { border-bottom-color: rgba(255,90,108,0.40); }
+  50% { border-bottom-color: rgba(255,90,108,0.80); }
+}
+.tm-state { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; }
+.tm-dot { width: 8px; height: 8px; border-radius: 50%; }
+.tm-calm .tm-dot { background: #10c98a; box-shadow: 0 0 8px rgba(16,201,138,0.5); }
+.tm-heating .tm-dot { background: #f0b429; box-shadow: 0 0 8px rgba(240,180,41,0.5); }
+.tm-tilt .tm-dot { background: #ff6b7a; box-shadow: 0 0 10px rgba(255,107,122,0.7); }
+.tm-calm .tm-label { color: #10c98a; }
+.tm-heating .tm-label { color: #f0b429; }
+.tm-tilt .tm-label { color: #ff6b7a; }
+.tm-track {
+  position: relative;
+  height: 6px;
+  background: var(--bg-elev);
+  border-radius: 999px;
+  overflow: visible;
+}
+.tm-fill {
+  position: absolute; top: 0; left: 0; height: 100%;
+  border-radius: 999px;
+  transition: width 0.5s ease, background 0.3s;
+}
+.tm-calm .tm-fill { background: linear-gradient(90deg, #10c98a 0%, #4cc28d 100%); }
+.tm-heating .tm-fill { background: linear-gradient(90deg, #10c98a 0%, #f0b429 100%); }
+.tm-tilt .tm-fill { background: linear-gradient(90deg, #10c98a 0%, #f0b429 50%, #ff6b7a 100%); }
+.tm-marker {
+  position: absolute; top: 50%; transform: translate(-50%, -50%);
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--text-primary);
+  border: 2px solid var(--bg-card);
+  transition: left 0.5s ease;
+}
+.tm-score {
+  position: absolute; top: 10px; transform: translateX(-50%);
+  font-size: 11px; font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-secondary);
+  transition: left 0.5s ease;
+}
+.tm-reasons {
+  display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+  font-size: 12px;
+}
+.tm-chip {
+  padding: 3px 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  white-space: nowrap;
+}
+.tm-heating .tm-chip { border-color: rgba(240,180,41,0.30); color: #f0b429; }
+.tm-tilt .tm-chip { border-color: rgba(255,107,122,0.30); color: #ff6b7a; }
+@media (max-width: 700px) {
+  .tiltmeter-bar { grid-template-columns: auto 1fr; padding: 8px 12px; }
+  .tm-reasons { grid-column: 1 / -1; padding-top: 4px; font-size: 10.5px; }
+}
+
 /* === Streak Calendar (Iter 3) — GitHub-style heatmap === */
 .streak-card { margin-bottom: 14px; }
 .streak-card-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-bottom: 12px; }
@@ -856,6 +936,104 @@ table { border-collapse: collapse; width: 100%; }
 .equity-pane { width: 100%; }
 @media (max-width: 700px) {
   .eq-tab { font-size: 11px; padding: 5px 8px; }
+}
+
+/* === Compact Goal card (Iter R1) — всё в одну строку 96px === */
+.goal-card {
+  display: grid;
+  grid-template-columns: minmax(140px, 0.8fr) auto minmax(150px, 1.5fr) auto;
+  grid-template-areas:
+    "head amounts progress percent"
+    "footer footer footer footer";
+  align-items: center;
+  column-gap: 16px;
+  row-gap: 6px;
+  padding: 14px 22px 12px;
+  margin-bottom: 12px;
+}
+.goal-card-head { grid-area: head; margin-bottom: 0; align-items: center; }
+.goal-card-name { font-size: 16px; line-height: 1.25; }
+.goal-card-eyebrow { margin-bottom: 2px; font-size: 10px; }
+.goal-card-actions {
+  opacity: 0; transition: opacity 0.15s;
+}
+.goal-card:hover .goal-card-actions { opacity: 1; }
+.goal-card-actions .icon-btn { width: 26px; height: 26px; padding: 0; }
+.goal-card-actions .icon-btn svg { width: 14px; height: 14px; }
+
+.goal-card-amounts {
+  grid-area: amounts;
+  margin-bottom: 0;
+  flex-wrap: nowrap;
+  gap: 8px;
+  align-items: baseline;
+}
+.goal-card-amounts .gca-current,
+.goal-card-amounts .gca-target { gap: 1px; }
+.goal-card-amounts .gca-eyebrow { font-size: 9px; letter-spacing: 0.04em; }
+.goal-card-amounts .gca-value { font-size: 18px; }
+
+/* progress bar занимает свою колонку */
+.goal-card .progress-wrap {
+  grid-area: progress;
+  padding: 0;
+  margin-bottom: 0;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+.goal-card .progress-track { height: 8px; flex: 1; }
+.goal-card .checkpoints { top: 50%; transform: translateY(-50%); height: 8px; }
+.goal-card .checkpoint { top: -4px; height: 16px; width: 2px; }
+.goal-card .checkpoint::after { font-size: 9px; bottom: -14px; }
+
+.goal-card-amounts .gca-progress {
+  display: none;  /* выкинули, % теперь отдельная колонка percent */
+}
+.goal-card .gca-progress-hero {
+  grid-area: percent;
+  text-align: right;
+}
+.goal-card .gca-progress-hero .gca-pct {
+  font-size: 56px;
+  font-weight: 700;
+  line-height: 0.95;
+  font-family: 'JetBrains Mono', monospace;
+}
+.goal-card .gca-progress-hero .gca-pct-label {
+  font-size: 9px;
+  margin-top: 2px;
+}
+
+.goal-card-footer {
+  grid-area: footer;
+  padding-bottom: 0;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-bottom: none;
+  border-top: 1px dashed var(--border);
+  font-size: 11px;
+}
+.gcf-item { font-size: 11px; }
+.gcf-item b { font-size: 12px; }
+
+/* Скрываем danger zone из Goal card — переедет в Edit modal */
+.goal-card .danger-zone-details { display: none; }
+
+/* На малых экранах — fallback 2-row layout */
+@media (max-width: 900px) {
+  .goal-card {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "head percent"
+      "amounts amounts"
+      "progress progress"
+      "footer footer";
+    row-gap: 10px;
+  }
+  .goal-card .gca-progress-hero .gca-pct { font-size: 44px; }
+  .goal-card-actions { opacity: 1; }
 }
 
 /* === KPI STRIP (Iter 2) — 6 кубиков под Goal card === */
