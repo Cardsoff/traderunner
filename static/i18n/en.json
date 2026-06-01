@@ -413,5 +413,12 @@
     "advice_calm": "",
     "advice_heating": "⚠ Take a 1-2h break",
     "advice_tilt": "🛑 Close terminal for today"
+  },
+  "mc": {
+    "all_setups": "All setups",
+    "total_trades": "Trades",
+    "total_pnl": "P&L",
+    "today": "Today",
+    "tooltip": "{0} · {1}"
   }
 }

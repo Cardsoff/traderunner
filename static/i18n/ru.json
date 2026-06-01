@@ -413,5 +413,12 @@
     "advice_calm": "",
     "advice_heating": "⚠ Возьми паузу 1-2 часа",
     "advice_tilt": "🛑 Закрой терминал на сегодня"
+  },
+  "mc": {
+    "all_setups": "Все сетапы",
+    "total_trades": "Сделок",
+    "total_pnl": "P&L",
+    "today": "Сегодня",
+    "tooltip": "{0} · {1}"
   }
 }
