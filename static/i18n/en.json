@@ -16,7 +16,13 @@
     "theme_light": "Light theme",
     "settings": "Settings",
     "logout": "Log out",
-    "admin": "Admin"
+    "admin": "Admin",
+    "sync_last_dash": "—",
+    "last_sync_prefix": "Sync",
+    "time_ago_sec": "{0} sec ago",
+    "time_ago_min": "{0} min ago",
+    "time_ago_h": "{0} h ago",
+    "time_ago_d": "{0} d ago"
   },
   "goal": {
     "active": "Active goal",
@@ -41,7 +47,12 @@
     "monthly_deposit_hint": "— counted in the goal forecast",
     "history_sub": "Goal history: active and achieved",
     "delete_confirm": "Trades and deposits will be kept. Goal progress will reset — we'll create an empty one.",
-    "no_name": "No name"
+    "no_name": "No name",
+    "forecast_prefix": "📅 Forecast",
+    "placeholder_no_goal": "🎯 Set your goal — click ✏ and fill in the amount, return and monthly deposit",
+    "placeholder_no_trades": "📭 No trades within this goal yet. Open your first trade — stats for this goal will appear here.",
+    "active_since": "Goal active since {0}",
+    "pace_waiting": "📊 Pace: waiting for data"
   },
   "equity": {
     "title": "Equity growth",
@@ -84,7 +95,10 @@
     "filter_setup": "Filter by setup:",
     "no_match": "Nothing matched the query",
     "try_other_query": "Try a different query or reset the filter",
-    "add_hint": "Click «+ Trade» or Sync with the exchange"
+    "add_hint": "Click «+ Trade» or Sync with the exchange",
+    "filter_all_n": "All ({0})",
+    "pagination_full": "Showing {0} of {1}",
+    "pagination_paged": "Showing {0} of {1} (page {2} / {3})"
   },
   "chart": {
     "loading": "Loading candles…",
@@ -333,5 +347,31 @@
     "no_growth": "Set planned return > 0%",
     "too_far": "Goal is too far — reconsider",
     "unavailable": "Forecast unavailable"
+  },
+  "danger": {
+    "zone": "⚠ danger zone",
+    "reset_btn": "Reset all trades, deposits and goal archive",
+    "reset_hint": "Settings and setups are kept. The active goal will be recreated with defaults."
+  },
+  "op": {
+    "margin": "Position margin",
+    "updated_now": "updated just now"
+  },
+  "tabs": {
+    "trades": "📓 Trades",
+    "deposits": "💵 Deposits",
+    "planfact": "📊 Plan vs Actual",
+    "setups": "🎯 Setups",
+    "analytics": "📈 Analytics",
+    "archive": "🏆 Goal history",
+    "add_trade": "+ Trade",
+    "add_op": "+ Operation",
+    "csv": "CSV",
+    "import_csv": "📂 Import CSV",
+    "sync_from_exch": "↻ From exchange",
+    "full_history": "⤓ Full history",
+    "stat_block": "📊 Trade stats",
+    "new_setup_ph": "new setup (range, FVG, OB...)",
+    "creds_keep_current": "leave empty to keep current"
   }
 }
