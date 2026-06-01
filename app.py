@@ -2351,6 +2351,138 @@ def api_report_pdf():
 
 
 
+@app.route("/api/analytics/streak-calendar")
+@_login_required
+def api_streak_calendar():
+    """
+    GitHub-style heatmap календарь дней сделок.
+    Query: ?scope=goal|30d|90d|365d  (default: goal)
+    Returns: {"days": [{date, trades, net_pnl, day_type}], "best_win_streak", "best_loss_streak", "current_streak"}
+      day_type: "big_win" / "win" / "neutral" / "loss" / "big_loss" / "no_trade"
+    """
+    from datetime import datetime as _dt, timedelta as _td
+    scope = (request.args.get("scope") or "goal").lower()
+
+    # Определяем диапазон дат
+    today = _dt.utcnow().date()
+    if scope == "30d":
+        start_date = today - _td(days=29)
+    elif scope == "90d":
+        start_date = today - _td(days=89)
+    elif scope == "365d":
+        start_date = today - _td(days=364)
+    else:  # goal
+        goal = db.get_active_goal()
+        if goal and goal.get("created_at"):
+            try:
+                start_date = _parse_date(goal["created_at"]).date()
+                if (today - start_date).days < 1:
+                    start_date = today - _td(days=29)  # fallback если цель < 1д
+            except Exception:
+                start_date = today - _td(days=29)
+        else:
+            start_date = today - _td(days=29)
+        scope = "goal"
+
+    end_date = today
+    days_count = (end_date - start_date).days + 1
+
+    # Получаем сделки в диапазоне
+    start_dt = _dt.combine(start_date, _dt.min.time())
+    end_dt = _dt.combine(end_date, _dt.max.time())
+    trades = _trades_in_range(start_dt, end_dt)
+
+    # Группируем по дате
+    from collections import defaultdict as _dd
+    by_date = _dd(lambda: {"trades": 0, "pnl": 0.0, "fee": 0.0})
+    for t in trades:
+        try:
+            ts = t.get("ts")
+            if isinstance(ts, str):
+                d = _parse_date(ts).date()
+            else:
+                d = ts.date() if hasattr(ts, "date") else _parse_date(str(ts)).date()
+            key = d.isoformat()
+            by_date[key]["trades"] += 1
+            by_date[key]["pnl"] += float(t.get("pnl_usd") or 0)
+            by_date[key]["fee"] += float(t.get("fee_usd") or 0)
+        except Exception:
+            continue
+
+    # Считаем медиану net P&L для цветовой нормализации (избегаем выбросов)
+    pnls = [b["pnl"] - b["fee"] for b in by_date.values() if b["trades"] > 0]
+    if pnls:
+        avg_abs = sum(abs(p) for p in pnls) / len(pnls)
+        big_threshold = max(avg_abs * 1.5, 1.0)
+    else:
+        big_threshold = 1.0
+
+    # Формируем массив дней
+    days_list = []
+    d = start_date
+    while d <= end_date:
+        key = d.isoformat()
+        if key in by_date:
+            b = by_date[key]
+            net = round(b["pnl"] - b["fee"], 2)
+            if net > big_threshold: dt = "big_win"
+            elif net > 0: dt = "win"
+            elif net < -big_threshold: dt = "big_loss"
+            elif net < 0: dt = "loss"
+            else: dt = "neutral"
+            days_list.append({"date": key, "trades": b["trades"], "net_pnl": net, "day_type": dt})
+        else:
+            days_list.append({"date": key, "trades": 0, "net_pnl": 0.0, "day_type": "no_trade"})
+        d += _td(days=1)
+
+    # Streak по дням (для current/best — по дням с положительным/отрицательным P&L)
+    cur_streak = 0
+    cur_kind = None
+    best_win_streak = 0
+    best_loss_streak = 0
+    run_win = run_loss = 0
+    for dd_ in days_list:
+        net = dd_["net_pnl"]
+        if dd_["day_type"] == "no_trade":
+            # нейтральный день не ломает серию
+            continue
+        if net > 0:
+            run_win += 1; run_loss = 0
+            if run_win > best_win_streak: best_win_streak = run_win
+        elif net < 0:
+            run_loss += 1; run_win = 0
+            if run_loss > best_loss_streak: best_loss_streak = run_loss
+    # Текущая (по последним непустым дням)
+    for dd_ in reversed(days_list):
+        if dd_["day_type"] == "no_trade":
+            continue
+        net = dd_["net_pnl"]
+        kind = "win" if net > 0 else ("loss" if net < 0 else None)
+        if kind is None:
+            break
+        if cur_kind is None:
+            cur_kind = kind
+            cur_streak = 1
+        elif kind == cur_kind:
+            cur_streak += 1
+        else:
+            break
+
+    return jsonify({
+        "ok": True,
+        "scope": scope,
+        "start_date": start_date.isoformat(),
+        "end_date": end_date.isoformat(),
+        "days_count": days_count,
+        "days": days_list,
+        "best_win_streak": best_win_streak,
+        "best_loss_streak": best_loss_streak,
+        "current_streak": cur_streak,
+        "current_kind": cur_kind,  # "win" / "loss" / None
+        "big_threshold": round(big_threshold, 2),
+    })
+
+
 @app.route("/api/equity/daily")
 @_login_required
 def api_equity_daily():
