@@ -759,6 +759,49 @@ table { border-collapse: collapse; width: 100%; }
 .gcm-value.pos { color: var(--green); }
 .gcm-value.neg { color: var(--red); }
 
+/* === KPI STRIP (Iter 2) — 6 кубиков под Goal card === */
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.kpi-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color 0.15s;
+}
+.kpi-item:hover { border-color: var(--border-strong, #2a3548); }
+.kpi-label {
+  font-size: 10.5px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.kpi-value {
+  font-size: 18px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text-primary);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.kpi-value.pos { color: var(--green); }
+.kpi-value.neg { color: var(--red); }
+@media (max-width: 900px) {
+  .kpi-strip { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 500px) {
+  .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+}
+
 
 /* === Глобальный фильтр периода (чипы + даты в одной строке) === */
 .section-head-with-dates {

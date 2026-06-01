@@ -311,6 +311,19 @@ function render(opts = {}) {
     if (trEl) trEl.textContent = String(gm.total || 0);
     const wrEl = document.getElementById('metricWinrate');
     if (wrEl) wrEl.textContent = (gm.winrate || 0).toFixed(1) + '%';
+    // Profit Factor (new in Iter 2)
+    const pfEl = document.getElementById('metricProfitFactor');
+    if (pfEl) {
+      if (gm.profit_factor === null || gm.profit_factor === undefined) {
+        pfEl.textContent = '∞';
+        pfEl.classList.add('pos'); pfEl.classList.remove('neg');
+      } else {
+        const v = +gm.profit_factor || 0;
+        pfEl.textContent = v.toFixed(2);
+        pfEl.classList.toggle('pos', v >= 1.5);
+        pfEl.classList.toggle('neg', v < 1.0 && v > 0);
+      }
+    }
   }
 
   // API status pill
