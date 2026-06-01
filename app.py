@@ -2351,6 +2351,128 @@ def api_report_pdf():
 
 
 
+@app.route("/api/analytics/tiltmeter")
+@_login_required
+def api_tiltmeter():
+    """
+    Эмоциональное состояние трейдера на основе последних 10 сделок.
+    Returns: {"score": 0-100, "kind": "calm|heating|tilt", "reasons": [{key, text, weight}], "trades_n": N}
+    """
+    from datetime import datetime as _dt, timedelta as _td
+    # Берём 10 последних закрытых сделок (по убыванию ts)
+    all_trades = db.get_trades_for_user(int(current_user.id))
+    trades = sorted([t for t in all_trades if t.get("ts")], key=lambda x: x["ts"], reverse=True)[:10]
+    if not trades:
+        return jsonify({
+            "ok": True, "score": 0, "kind": "calm",
+            "trades_n": 0,
+            "reasons": [{"key": "no_trades", "text": "No trades yet · Start when ready", "weight": 0}]
+        })
+
+    score = 0
+    reasons = []
+
+    # 1) Серия лосей подряд (вес до 30): 2 → +10, 3 → +20, 4+ → +30
+    loss_streak = 0
+    for t in trades:
+        if (t.get("pnl_usd") or 0) < 0:
+            loss_streak += 1
+        else:
+            break
+    if loss_streak >= 4:
+        score += 30
+        reasons.append({"key": "loss_streak", "text": f"{loss_streak} losses in row", "weight": 30})
+    elif loss_streak == 3:
+        score += 20
+        reasons.append({"key": "loss_streak", "text": "3 losses in row", "weight": 20})
+    elif loss_streak == 2:
+        score += 10
+        reasons.append({"key": "loss_streak", "text": "2 losses in row", "weight": 10})
+
+    # 2) Revenge-trades: вход меньше чем через 30 мин после убытка
+    revenge_count = 0
+    sorted_asc = sorted(trades, key=lambda x: x["ts"])  # по возрастанию
+    for i in range(1, len(sorted_asc)):
+        prev = sorted_asc[i-1]
+        cur = sorted_asc[i]
+        if (prev.get("pnl_usd") or 0) >= 0:
+            continue
+        try:
+            t_prev = _parse_date(prev["ts"]) if isinstance(prev["ts"], str) else prev["ts"]
+            t_cur = _parse_date(cur["ts"]) if isinstance(cur["ts"], str) else cur["ts"]
+            delta_min = (t_cur - t_prev).total_seconds() / 60.0
+            if delta_min < 30:
+                revenge_count += 1
+        except Exception:
+            continue
+    if revenge_count >= 3:
+        score += 25
+        reasons.append({"key": "revenge", "text": f"{revenge_count} revenge trades", "weight": 25})
+    elif revenge_count > 0:
+        w = revenge_count * 8
+        score += w
+        reasons.append({"key": "revenge", "text": f"{revenge_count} revenge trade(s)", "weight": w})
+
+    # 3) Рост size после убытка (вес 20): если qty следующей сделки > avg_qty * 1.3
+    qtys = [float(t.get("qty") or 0) for t in trades if (t.get("qty") or 0) > 0]
+    if len(qtys) >= 3:
+        avg_qty = sum(qtys) / len(qtys)
+        oversized_after_loss = 0
+        for i in range(1, len(sorted_asc)):
+            prev = sorted_asc[i-1]; cur = sorted_asc[i]
+            if (prev.get("pnl_usd") or 0) >= 0:
+                continue
+            cur_qty = float(cur.get("qty") or 0)
+            if avg_qty > 0 and cur_qty > avg_qty * 1.3:
+                oversized_after_loss += 1
+        if oversized_after_loss >= 2:
+            score += 20
+            reasons.append({"key": "size_up", "text": f"size +30%+ after loss x{oversized_after_loss}", "weight": 20})
+        elif oversized_after_loss == 1:
+            score += 10
+            reasons.append({"key": "size_up", "text": "size +30%+ after loss", "weight": 10})
+
+    # 4) Частота входов: больше 3 сделок за последний час (overtrading)
+    now = _dt.utcnow()
+    last_hour_count = 0
+    for t in trades:
+        try:
+            t_ts = _parse_date(t["ts"]) if isinstance(t["ts"], str) else t["ts"]
+            if (now - t_ts).total_seconds() < 3600:
+                last_hour_count += 1
+        except Exception:
+            continue
+    if last_hour_count >= 4:
+        score += 15
+        reasons.append({"key": "overtrading", "text": f"{last_hour_count} trades in last hour", "weight": 15})
+    elif last_hour_count == 3:
+        score += 8
+        reasons.append({"key": "overtrading", "text": "3 trades in last hour", "weight": 8})
+
+    score = min(score, 100)
+    if score >= 70:
+        kind = "tilt"
+    elif score >= 40:
+        kind = "heating"
+    else:
+        kind = "calm"
+
+    # Если ни одной проблемы — положительное сообщение
+    if not reasons:
+        reasons = [{"key": "all_good", "text": "All good · trading by plan", "weight": 0}]
+
+    # Сортируем по weight и берём top-3
+    reasons = sorted(reasons, key=lambda x: -x["weight"])[:3]
+
+    return jsonify({
+        "ok": True,
+        "score": score,
+        "kind": kind,
+        "trades_n": len(trades),
+        "reasons": reasons,
+    })
+
+
 @app.route("/api/analytics/streak-calendar")
 @_login_required
 def api_streak_calendar():
