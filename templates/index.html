@@ -116,7 +116,7 @@
 
     <div class="goal-card-footer">
       <div class="gcf-left">
-        <div class="gcf-item"><span class="gcf-label">📅 Прогноз</span><b id="goalForecast">—</b></div>
+        <div class="gcf-item"><span class="gcf-label" data-i18n="goal.forecast_prefix">📅 Прогноз</span><b id="goalForecast">—</b></div>
         <div class="gcf-item"><span class="gcf-label" data-i18n="goal.remaining">Осталось</span><b id="goalRemain">—</b></div>
       </div>
       <div class="gcf-right">
@@ -150,11 +150,11 @@
 
     <!-- Опасная зона — мелким текстом внизу карточки -->
     <details class="danger-zone-details">
-      <summary>⚠ опасная зона</summary>
+      <summary data-i18n="danger.zone">⚠ опасная зона</summary>
       <div class="danger-zone-content">
-        <button class="btn btn-danger" id="resetAllDataBtn">Сбросить все сделки, депозиты и архив целей</button>
+        <button class="btn btn-danger" id="resetAllDataBtn" data-i18n="danger.reset_btn">Сбросить все сделки, депозиты и архив целей</button>
         <div class="muted" style="margin-top:6px; font-size:11px;">
-          Настройки и сетапы остаются. Активная цель будет пересоздана с дефолтами.
+          <span data-i18n="danger.reset_hint">Настройки и сетапы остаются. Активная цель будет пересоздана с дефолтами.</span>
         </div>
       </div>
     </details>
@@ -166,12 +166,12 @@
       <div class="op-title-row">
         <div class="op-title">⚡ Открытые позиции <span class="op-count" id="opCount">0</span></div>
         <div class="op-meta">
-          <span class="op-refresh-info" id="opRefreshInfo">обновлено только что</span>
+          <span class="op-refresh-info" id="opRefreshInfo" data-i18n="op.updated_now">обновлено только что</span>
           <button class="op-refresh-btn" id="opRefreshBtn" title="Обновить вручную">↻</button>
         </div>
       </div>
       <div class="op-summary">
-        <div class="op-sum-item"><span class="op-sum-label">Маржа в позициях</span><span class="op-sum-val" id="opTotalMargin">$0</span></div>
+        <div class="op-sum-item"><span class="op-sum-label" data-i18n="op.margin">Маржа в позициях</span><span class="op-sum-val" id="opTotalMargin">$0</span></div>
         <div class="op-sum-item"><span class="op-sum-label">Unrealized P&L</span><span class="op-sum-val" id="opTotalPnl">$0</span></div>
       </div>
     </div>
@@ -211,7 +211,7 @@
   <!-- ОДИН блок статистики сделок за выбранный период -->
   <div class="section-head section-head-with-dates">
     <div class="section-head-left">
-      <div class="section-title">📊 Статистика сделок</div>
+      <div class="section-title" data-i18n="tabs.stat_block">📊 Статистика сделок</div>
       <div class="section-sub muted" id="globalPeriodSub" data-i18n="period.last_24h">За 24 часа</div>
     </div>
     <div class="section-head-filter">
@@ -225,7 +225,7 @@
       <span class="fb-sep"></span>
       <span class="fb-label">📅 c</span>
       <input type="date" id="globalFrom" />
-      <span class="fb-label">по</span>
+      <span class="fb-label" data-i18n="common.by">по</span>
       <input type="date" id="globalTo" />
     </div>
   </div>
@@ -242,12 +242,12 @@
 
   <section class="tabs-wrap">
     <div class="tabs">
-      <button class="tab tab-active" data-tab="trades" title="Журнал всех сделок">📓 Сделки</button>
-      <button class="tab" data-tab="deposits" title="Пополнения и выводы">💵 Депозиты</button>
-      <button class="tab" data-tab="planfact" title="План vs Факт помесячно">📊 План vs Факт</button>
-      <button class="tab" data-tab="setups" title="Какой сетап реально приносит деньги">🎯 Сетапы</button>
-      <button class="tab" data-tab="advanced" title="Sharpe, Sortino, R-multiple, heatmap">📈 Аналитика</button>
-      <button class="tab" data-tab="archive" title="Все цели — активная и закрытые">🏆 История целей</button>
+      <button class="tab tab-active" data-tab="trades" title="Журнал всех сделок" data-i18n="tabs.trades">📓 Сделки</button>
+      <button class="tab" data-tab="deposits" title="Пополнения и выводы" data-i18n="tabs.deposits">💵 Депозиты</button>
+      <button class="tab" data-tab="planfact" title="План vs Факт помесячно" data-i18n="tabs.planfact">📊 План vs Факт</button>
+      <button class="tab" data-tab="setups" title="Какой сетап реально приносит деньги" data-i18n="tabs.setups">🎯 Сетапы</button>
+      <button class="tab" data-tab="advanced" title="Sharpe, Sortino, R-multiple, heatmap" data-i18n="tabs.analytics">📈 Аналитика</button>
+      <button class="tab" data-tab="archive" title="Все цели — активная и закрытые" data-i18n="tabs.archive">🏆 История целей</button>
     </div>
 
     <div class="tab-panel tab-panel-active" id="tab-trades">
@@ -255,9 +255,9 @@
       <div class="panel-header">
         <div class="panel-header-left"><input type="text" class="search-input" id="tradeSearch" name="search_xxxxxxxxxxxxxxxxxxxx" placeholder="🔍 Поиск по паре, сетапу, заметке..." autocomplete="new-password" data-form-type="other" data-lpignore="true" autocorrect="off" autocapitalize="off" spellcheck="false" value="" readonly onfocus="this.removeAttribute('readonly')" /></div>
         <div class="panel-header-right">
-          <a class="btn btn-ghost" href="/api/trades/export.csv" id="exportCsvBtn" title="Экспорт сделок в CSV"><span>CSV</span></a>
+          <a class="btn btn-ghost" href="/api/trades/export.csv" id="exportCsvBtn" title="Экспорт сделок в CSV"><span data-i18n="tabs.csv">CSV</span></a>
           <a class="btn btn-ghost" id="reportPdfBtn" title="PDF-отчёт за текущий месяц" target="_blank"><span>📄 PDF</span></a>
-          <button class="btn btn-secondary" id="addTradeBtn"><span>+ Сделка</span> <span class="kbd">N</span></button>
+          <button class="btn btn-secondary" id="addTradeBtn"><span data-i18n="tabs.add_trade">+ Сделка</span> <span class="kbd">N</span></button>
         </div>
       </div>
       <div class="muted" style="margin-bottom: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
@@ -291,15 +291,15 @@
       <div class="filter-bar" data-scope="deposits">
         <span class="fb-label">📅 c</span>
         <input type="date" id="depositsFrom" />
-        <span class="fb-label">по</span>
+        <span class="fb-label" data-i18n="common.by">по</span>
         <input type="date" id="depositsTo" />
       </div>
       <div class="panel-header" style="flex-wrap:wrap; gap:8px;">
         <div class="muted" style="max-width:560px;">💡 Депозиты и выводы определяются автоматически при каждом Sync (по изменению баланса). Можно добавить вручную или импортировать CSV.</div>
         <div style="display:flex; gap:8px; align-items:center;">
-          <button class="btn btn-ghost" id="importDepositsCsvBtn" title="Импорт из CSV: дата,тип,сумма,комментарий">📂 Импорт CSV</button>
-          <button class="btn btn-ghost" id="syncDepositsBtn" title="Запустить sync для подтяжки депозитов с биржи">↻ С биржи</button>
-          <button class="btn btn-secondary" id="addDepositBtn">+ Операция</button>
+          <button class="btn btn-ghost" id="importDepositsCsvBtn" title="Импорт из CSV: дата,тип,сумма,комментарий" data-i18n="tabs.import_csv">📂 Импорт CSV</button>
+          <button class="btn btn-ghost" id="syncDepositsBtn" title="Запустить sync для подтяжки депозитов с биржи" data-i18n="tabs.sync_from_exch">↻ С биржи</button>
+          <button class="btn btn-secondary" id="addDepositBtn" data-i18n="tabs.add_op">+ Операция</button>
         </div>
       </div>
       <div class="table-wrap">
@@ -425,7 +425,7 @@
     <div class="muted" style="margin-bottom: 10px;" data-i18n="setups_modal.hint">При удалении сделки с тэгом теряют только тэг.</div>
     <div class="setup-pills" id="setupPills"></div>
     <div class="setup-add-row">
-      <input type="text" id="newSetupInput" placeholder="новый сетап (range, FVG, OB...)" maxlength="20" />
+      <input type="text" id="newSetupInput" placeholder="новый сетап (range, FVG, OB...)" data-i18n-placeholder="tabs.new_setup_ph" maxlength="20" />
       <button class="btn btn-primary" id="addSetupBtn" data-i18n="setups_modal.add">Добавить</button>
     </div>
   </div>
@@ -464,7 +464,7 @@
     </div>
     <div class="form-row">
       <label>API Key</label>
-      <input type="password" id="credApiKey" placeholder="оставь пустым — сохранится текущий" autocomplete="off" />
+      <input type="password" id="credApiKey" placeholder="оставь пустым — сохранится текущий" data-i18n-placeholder="tabs.creds_keep_current" autocomplete="off" />
       <div class="muted" id="credApiKeyMask" style="font-size:11px; margin-top:4px;"></div>
     </div>
     <div class="form-row">
@@ -476,7 +476,7 @@
   </div>
   <div class="modal-footer">
     <button class="btn btn-danger" id="clearCredsBtn" data-i18n="credentials_modal.clear">Очистить</button>
-    <button class="btn btn-secondary" id="fullHistoryBtn" title="Перезагрузить ВСЮ историю сделок с биржи с 2020 года (медленно, но один раз)">⤓ История с нуля</button>
+    <button class="btn btn-secondary" id="fullHistoryBtn" title="Перезагрузить ВСЮ историю сделок с биржи с 2020 года (медленно, но один раз)" data-i18n="tabs.full_history">⤓ История с нуля</button>
     <div style="flex: 1;"></div>
     <button class="btn btn-ghost" data-close="credentialsModal" data-i18n="common.cancel">Отмена</button>
     <button class="btn btn-primary" id="saveCredsBtn" data-i18n="common.save">Сохранить</button>
