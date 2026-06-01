@@ -3259,6 +3259,43 @@ function fireConfetti() {
   window.openTradeChart = openChartModal;
 })();
 
+// ===== Equity tabs (Iter 2B) =====
+(function () {
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.eq-tab');
+    if (!btn) return;
+    const tab = btn.getAttribute('data-eq-tab');
+    if (!tab) return;
+    // Активная кнопка
+    document.querySelectorAll('.eq-tab').forEach(function (b) { b.classList.toggle('active', b === btn); });
+    // Показать соответствующий pane
+    document.querySelectorAll('.equity-pane').forEach(function (p) {
+      p.style.display = (p.getAttribute('data-eq-pane') === tab) ? 'block' : 'none';
+    });
+    // Chart.js требует resize после show
+    setTimeout(function () {
+      try {
+        if (tab === 'growth' && window._growthChart && window._growthChart.resize) window._growthChart.resize();
+        if (tab === 'returns' && window._returnsChart && window._returnsChart.resize) window._returnsChart.resize();
+        if (tab === 'daily' && window._equityDailyChart && window._equityDailyChart.resize) window._equityDailyChart.resize();
+      } catch (_) {}
+    }, 50);
+    // Логически переключаем легенду — для daily другие колонки
+    const lg = document.getElementById('equityLegend');
+    if (lg) {
+      if (tab === 'daily') {
+        lg.innerHTML = '<div class="legend-item"><span class="ldot" style="background:#10c98a;"></span>Equity</div>' +
+                       '<div class="legend-item"><span class="ldot" style="background:#ff5a6c;"></span>Drawdown %</div>';
+      } else {
+        lg.innerHTML = '<div class="legend-item"><span class="ldot dot-plan"></span><span data-i18n="equity.plan">' +
+                       (window.t ? t('equity.plan') : 'Plan') + '</span></div>' +
+                       '<div class="legend-item"><span class="ldot dot-fact"></span><span data-i18n="equity.fact">' +
+                       (window.t ? t('equity.fact') : 'Actual') + '</span></div>';
+      }
+    }
+  });
+})();
+
 // ===== i18n: переключатель RU/EN =====
 (function () {
   function highlight() {

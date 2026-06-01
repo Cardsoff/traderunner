@@ -759,6 +759,27 @@ table { border-collapse: collapse; width: 100%; }
 .gcm-value.pos { color: var(--green); }
 .gcm-value.neg { color: var(--red); }
 
+/* === Equity merged (Iter 2B) — табы для 3 charts === */
+.equity-merged { margin-bottom: 14px; }
+.equity-tabs-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-bottom: 10px; }
+.equity-tabs { display: flex; gap: 4px; background: var(--bg-soft, #0a0e14); border-radius: 8px; padding: 3px; }
+.eq-tab {
+  background: transparent; border: 0;
+  color: var(--text-secondary);
+  font-size: 13px; font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.eq-tab:hover { color: var(--text-primary); background: rgba(255,255,255,0.04); }
+.eq-tab.active { background: var(--accent); color: white; font-weight: 600; }
+.equity-pane { width: 100%; }
+@media (max-width: 700px) {
+  .eq-tab { font-size: 11px; padding: 5px 8px; }
+}
+
 /* === KPI STRIP (Iter 2) — 6 кубиков под Goal card === */
 .kpi-strip {
   display: grid;
