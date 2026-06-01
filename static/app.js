@@ -22,7 +22,7 @@ const api = {
 
 const fmtMoney = (v, d=0) => { if (v==null||isNaN(v)) return '$0'; const sign=v<0?'-':''; const a=Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}); return `${sign}$${a}`; };
 const fmtPct = (v, d=2) => v==null||isNaN(v) ? '0%' : `${v>=0?'+':''}${Number(v).toFixed(d)}%`;
-const fmtDate = s => { if (!s) return '—'; try { return new Date(s).toLocaleDateString('ru-RU',{day:'2-digit',month:'short',year:'numeric'}); } catch { return s; } };
+const fmtDate = s => { if (!s) return '—'; try { const lc = (window.i18n && window.i18n.getLang()==='en') ? 'en-US' : 'ru-RU'; return new Date(s).toLocaleDateString(lc,{day:'2-digit',month:'short',year:'numeric'}); } catch { return s; } };
 const fmtDateTime = s => { if (!s) return '—'; try { return new Date(s).toLocaleString('ru-RU',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}); } catch { return s; } };
 
 function toast(msg, type='success', ms=3000) {
