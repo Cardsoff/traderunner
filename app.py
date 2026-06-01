@@ -2398,8 +2398,8 @@ def api_tiltmeter():
         if (prev.get("pnl_usd") or 0) >= 0:
             continue
         try:
-            t_prev = _parse_date(prev["ts"]) if isinstance(prev["ts"], str) else prev["ts"]
-            t_cur = _parse_date(cur["ts"]) if isinstance(cur["ts"], str) else cur["ts"]
+            t_prev = datetime.fromisoformat(prev["ts"].replace("Z","").split("+")[0]) if isinstance(prev["ts"], str) else prev["ts"]
+            t_cur = datetime.fromisoformat(cur["ts"].replace("Z","").split("+")[0]) if isinstance(cur["ts"], str) else cur["ts"]
             delta_min = (t_cur - t_prev).total_seconds() / 60.0
             if delta_min < 30:
                 revenge_count += 1
@@ -2437,7 +2437,7 @@ def api_tiltmeter():
     last_hour_count = 0
     for t in trades:
         try:
-            t_ts = _parse_date(t["ts"]) if isinstance(t["ts"], str) else t["ts"]
+            t_ts = datetime.fromisoformat(t["ts"].replace("Z","").split("+")[0]) if isinstance(t["ts"], str) else t["ts"]
             if (now - t_ts).total_seconds() < 3600:
                 last_hour_count += 1
         except Exception:
@@ -2510,9 +2510,10 @@ def api_monthly_calendar():
         try:
             ts = t.get("ts")
             if isinstance(ts, str):
-                d = _parse_date(ts).date()
+                # ts может быть "2026-05-24" или "2026-05-24T22:11:35" — берём только дату
+                d = datetime.fromisoformat(ts.replace("Z","").split("+")[0]).date() if "T" in ts else _parse_date(ts).date()
             else:
-                d = ts.date() if hasattr(ts, "date") else _parse_date(str(ts)).date()
+                d = ts.date() if hasattr(ts, "date") else datetime.fromisoformat(str(ts)).date()
             stp = (t.get("setup") or "").strip()
             if stp:
                 setups_used.add(stp)
