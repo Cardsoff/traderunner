@@ -840,6 +840,106 @@ table { border-collapse: collapse; width: 100%; }
   .tm-reasons { grid-column: 1 / -1; padding-top: 4px; font-size: 10.5px; }
 }
 
+/* === Monthly P&L Calendar (Iter R3) — Tradezella-style === */
+.monthly-cal-card { margin-bottom: 14px; }
+.mc-card-header { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; padding-bottom: 12px; }
+.mc-nav { display: flex; align-items: center; gap: 8px; }
+.mc-nav-btn {
+  background: var(--bg-elev); border: 1px solid var(--border);
+  color: var(--text-secondary);
+  width: 28px; height: 28px; border-radius: 6px;
+  cursor: pointer; font-size: 14px; line-height: 1;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: all 0.15s; font-family: inherit;
+}
+.mc-nav-btn:hover { background: var(--bg-card); color: var(--text-primary); border-color: var(--accent); }
+.mc-nav-btn.mc-today { font-size: 10px; color: var(--accent); margin-left: 4px; }
+.mc-month-name {
+  font-size: 16px; font-weight: 600;
+  min-width: 140px; text-align: center;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+.mc-header-right { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.mc-setup-filter {
+  background: var(--bg-elev); border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 5px 10px; border-radius: 6px;
+  font-size: 12px; font-family: inherit;
+  cursor: pointer;
+}
+.mc-summary { display: flex; gap: 14px; font-size: 12px; }
+.mc-summary b { font-family: 'JetBrains Mono', monospace; margin-left: 4px; }
+.mc-pnl-pos { color: var(--green); }
+.mc-pnl-neg { color: var(--red); }
+.mc-pnl-zero { color: var(--text-secondary); }
+
+.mc-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 4px;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-align: center;
+  padding: 0 2px;
+}
+
+.mc-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+.mc-cell {
+  min-height: 60px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: default;
+  position: relative;
+  transition: transform 0.12s, border-color 0.12s;
+}
+.mc-cell.mc-out { opacity: 0.32; }
+.mc-cell:not(.mc-out):hover { transform: translateY(-1px); border-color: var(--accent); }
+.mc-cell.mc-today { box-shadow: inset 0 0 0 1px var(--accent); }
+.mc-cell.mc-pos {
+  background: linear-gradient(135deg, rgba(16,201,138,0.06) 0%, var(--bg-elev) 60%);
+  border-color: rgba(16,201,138,0.30);
+}
+.mc-cell.mc-neg {
+  background: linear-gradient(135deg, rgba(255,107,122,0.06) 0%, var(--bg-elev) 60%);
+  border-color: rgba(255,107,122,0.30);
+}
+.mc-cell-day { font-size: 11px; color: var(--text-secondary); font-weight: 600; }
+.mc-cell.mc-pos .mc-cell-day { color: rgba(16,201,138,0.85); }
+.mc-cell.mc-neg .mc-cell-day { color: rgba(255,107,122,0.85); }
+.mc-cell-pnl {
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.mc-cell.mc-pos .mc-cell-pnl { color: var(--green); }
+.mc-cell.mc-neg .mc-cell-pnl { color: var(--red); }
+.mc-cell-trades { font-size: 10px; color: var(--text-tertiary); font-weight: 500; line-height: 1; }
+.mc-cell-empty .mc-cell-pnl,
+.mc-cell-empty .mc-cell-trades { display: none; }
+
+@media (max-width: 700px) {
+  .mc-cell { min-height: 48px; padding: 4px 5px; }
+  .mc-cell-pnl { font-size: 11px; }
+  .mc-cell-day { font-size: 10px; }
+  .mc-month-name { min-width: 110px; font-size: 14px; }
+}
+
 /* === Streak Calendar (Iter 3) — GitHub-style heatmap === */
 .streak-card { margin-bottom: 14px; }
 .streak-card-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-bottom: 12px; }

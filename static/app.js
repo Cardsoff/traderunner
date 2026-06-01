@@ -3356,120 +3356,118 @@ function fireConfetti() {
   setInterval(loadTilt, 60000);
 })();
 
-// ===== Streak Calendar (Iter 3) =====
+// ===== Monthly P&L Calendar (Iter R3) — replaces Streak =====
 (function () {
-  let _scope = 'goal';
-  const todayStr = new Date().toISOString().slice(0, 10);
+  let _curMonth = null;
+  let _curSetup = '';
 
-  function fmtDate(s) {
-    try {
-      const lc = (window.i18n && window.i18n.getLang() === 'en') ? 'en-US' : 'ru-RU';
-      return new Date(s).toLocaleDateString(lc, {day:'numeric', month:'short', year:'numeric'});
-    } catch { return s; }
+  function fmtPnl(v) {
+    return (v > 0 ? '+' : '') + '$' + Math.round(v);
   }
-  function tradesNoun(n) {
-    if (!window.i18n) return n + ' trades';
-    const last = n % 10, last2 = n % 100;
-    if (last === 1 && last2 !== 11) return t('streak.tooltip_trades_one', n);
-    if ([2,3,4].includes(last) && ![12,13,14].includes(last2)) return t('streak.tooltip_trades_few', n);
-    return t('streak.tooltip_trades_many', n);
-  }
-  async function load() {
-    const grid = document.getElementById('streakGrid');
-    const detail = document.getElementById('streakDetail');
-    const bestEl = document.getElementById('streakBest');
-    const worstEl = document.getElementById('streakWorst');
-    const curEl = document.getElementById('streakCurrent');
+
+  async function loadMonth() {
+    const grid = document.getElementById('mcGrid');
     if (!grid) return;
-    grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:14px; color: var(--text-secondary); font-size:12px;">Loading…</div>';
     try {
-      const r = await fetch('/api/analytics/streak-calendar?scope=' + encodeURIComponent(_scope), {credentials:'include'});
+      const q = new URLSearchParams();
+      if (_curMonth) q.set('month', _curMonth);
+      if (_curSetup) q.set('setup', _curSetup);
+      const r = await fetch('/api/analytics/monthly-calendar?' + q.toString(), {credentials:'include'});
       const d = await r.json();
       if (!r.ok || !d.ok) {
-        grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:14px; color: var(--red); font-size:12px;">Error: ' + (d.error || r.status) + '</div>';
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:14px;color:var(--red);font-size:12px;">Error: ' + (d.error || r.status) + '</div>';
         return;
       }
-      // Render grid
-      grid.innerHTML = '';
-      // Если 365D — делаем компактнее (мельче cells)
-      grid.classList.toggle('dense', d.days_count > 60); grid.style.gridAutoRows = '';
-      d.days.forEach(function (day) {
-        const cell = document.createElement('div');
-        cell.className = 'streak-cell sc-' + day.day_type;
-        if (day.date === todayStr) cell.classList.add('sc-today');
-        cell.dataset.date = day.date;
-        cell.dataset.trades = day.trades;
-        cell.dataset.pnl = day.net_pnl;
-        cell.dataset.type = day.day_type;
-        cell.addEventListener('mouseenter', function () {
-          const td = (parseInt(this.dataset.trades) || 0);
-          const pnl = parseFloat(this.dataset.pnl) || 0;
-          let html = '<b>' + fmtDate(this.dataset.date) + '</b> · ';
-          if (td === 0) {
-            html += '<span style="color: var(--text-tertiary);">' + (window.t ? t('streak.tooltip_no_trades') : 'no trades') + '</span>';
-          } else {
-            const sign = pnl >= 0 ? '+' : '';
-            const color = pnl >= 0 ? '#10c98a' : '#ff5a6c';
-            html += '<span>' + tradesNoun(td) + '</span> · <b style="color:' + color + ';">' + sign + '$' + pnl.toFixed(2) + '</b>';
-          }
-          detail.innerHTML = html;
-        });
-        grid.appendChild(cell);
-      });
-      // Streak stats
-      bestEl.textContent = d.best_win_streak || 0;
-      worstEl.textContent = d.best_loss_streak || 0;
-      if (d.current_streak && d.current_kind) {
-        if (d.current_kind === 'win') {
-          curEl.textContent = '+' + d.current_streak;
-          curEl.className = 'ss-val pos';
-        } else {
-          curEl.textContent = '−' + d.current_streak;
-          curEl.className = 'ss-val neg';
-        }
-      } else {
-        curEl.textContent = '—';
-        curEl.className = 'ss-val';
+      _curMonth = d.month;
+      const monthEl = document.getElementById('mcMonthName');
+      if (monthEl) {
+        try {
+          const [y, m] = d.month.split('-');
+          const lc = (window.i18n && window.i18n.getLang()==='en') ? 'en-US' : 'ru-RU';
+          monthEl.textContent = new Date(parseInt(y), parseInt(m)-1, 1).toLocaleDateString(lc, {month:'long', year:'numeric'});
+        } catch { monthEl.textContent = d.month_name; }
       }
+      const filterEl = document.getElementById('mcSetupFilter');
+      if (filterEl && filterEl.options.length <= 1) {
+        const allTxt = (window.t ? t('mc.all_setups') : 'All setups');
+        filterEl.innerHTML = '<option value="">' + allTxt + '</option>' +
+          d.setups_used.map(s => '<option value="' + s.replace(/"/g,'&quot;') + '">' + s + '</option>').join('');
+        filterEl.value = _curSetup;
+      }
+      const ttEl = document.getElementById('mcTotalTrades');
+      const tpEl = document.getElementById('mcTotalPnl');
+      if (ttEl) ttEl.textContent = d.total_trades;
+      if (tpEl) {
+        tpEl.textContent = (d.total_pnl > 0 ? '+' : '') + '$' + d.total_pnl.toFixed(2);
+        tpEl.className = d.total_pnl > 0 ? 'mc-pnl-pos' : (d.total_pnl < 0 ? 'mc-pnl-neg' : 'mc-pnl-zero');
+      }
+      const todayStr = new Date().toISOString().slice(0,10);
+      const html = [];
+      d.weeks.forEach(function (week) {
+        week.forEach(function (cell) {
+          const classes = ['mc-cell'];
+          if (!cell.in_month) classes.push('mc-out');
+          if (cell.date === todayStr) classes.push('mc-today');
+          if (cell.sign === 'pos') classes.push('mc-pos');
+          else if (cell.sign === 'neg') classes.push('mc-neg');
+          if (cell.trades === 0) classes.push('mc-cell-empty');
+          const opacity = cell.in_month && cell.trades > 0 ? Math.max(0.45, 0.45 + cell.intensity * 0.55) : 1;
+          let inner = '<span class="mc-cell-day">' + cell.day + '</span>';
+          if (cell.in_month && cell.trades > 0) {
+            inner += '<span class="mc-cell-pnl" style="opacity:' + opacity.toFixed(2) + '">' + fmtPnl(cell.net_pnl) + '</span>';
+            inner += '<span class="mc-cell-trades">' + cell.trades + ' tr</span>';
+          }
+          html.push('<div class="' + classes.join(' ') + '" title="' + cell.date + (cell.trades > 0 ? ' \u00b7 ' + cell.trades + ' trades \u00b7 $' + cell.net_pnl : '') + '">' + inner + '</div>');
+        });
+      });
+      grid.innerHTML = html.join('');
     } catch (e) {
-      grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:14px; color: var(--red); font-size:12px;">' + e.message + '</div>';
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:14px;color:var(--red);font-size:12px;">' + e.message + '</div>';
     }
   }
 
-  // Switcher
   document.addEventListener('click', function (e) {
-    const btn = e.target.closest('.st-tab');
-    if (!btn) return;
-    document.querySelectorAll('.st-tab').forEach(function (b) { b.classList.toggle('active', b === btn); });
-    _scope = btn.getAttribute('data-st-scope') || 'goal';
-    load();
+    if (e.target && e.target.id === 'mcPrev') {
+      if (!_curMonth) return;
+      const [y, m] = _curMonth.split('-').map(Number);
+      const d = new Date(y, m - 2, 1);
+      _curMonth = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+      loadMonth();
+    } else if (e.target && e.target.id === 'mcNext') {
+      if (!_curMonth) return;
+      const [y, m] = _curMonth.split('-').map(Number);
+      const d = new Date(y, m, 1);
+      _curMonth = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+      loadMonth();
+    } else if (e.target && e.target.id === 'mcToday') {
+      _curMonth = null;
+      loadMonth();
+    }
+  });
+  document.addEventListener('change', function (e) {
+    if (e.target && e.target.id === 'mcSetupFilter') {
+      _curSetup = e.target.value || '';
+      loadMonth();
+    }
   });
 
-  // Reload on i18n changed (для обновления подписей в detail)
-  document.addEventListener('i18n:changed', function () {
-    // Просто перерисуем — labels в HTML обновятся через data-i18n auto-render
-    load();
-  });
-
-  // Initial load после загрузки страницы (через 500мс чтобы i18n успел инициализироваться)
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { setTimeout(load, 500); });
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(loadMonth, 700); });
   } else {
-    setTimeout(load, 500);
+    setTimeout(loadMonth, 700);
   }
-  // Также перезагружаем после loadAll (когда юзер сделает sync — calendar может обновиться)
   if (typeof window !== 'undefined') {
-    const origLoadAll = window.loadAll;
-    if (typeof origLoadAll === 'function') {
+    const orig = window.loadAll;
+    if (typeof orig === 'function') {
       window.loadAll = async function () {
-        const r = await origLoadAll.apply(this, arguments);
-        load();
+        const r = await orig.apply(this, arguments);
+        loadMonth();
         return r;
       };
     }
   }
+  document.addEventListener('i18n:changed', loadMonth);
 })();
-
 // ===== Equity tabs (Iter 2B) =====
 (function () {
   document.addEventListener('click', function (e) {
