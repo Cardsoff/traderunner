@@ -633,8 +633,8 @@ table { border-collapse: collapse; width: 100%; }
   border: 1px solid var(--border);
   border-left: 4px solid var(--accent);
   border-radius: var(--r-lg);
-  padding: 22px 26px;
-  margin-bottom: 16px;
+  padding: 16px 22px 14px;
+  margin-bottom: 12px;
   box-shadow: 0 0 0 1px rgba(124,92,255,0.10), var(--shadow-1);
 }
 
@@ -643,7 +643,7 @@ table { border-collapse: collapse; width: 100%; }
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 18px;
+  margin-bottom: 10px;
 }
 .goal-card-eyebrow {
   font-size: 11px;
@@ -663,10 +663,10 @@ table { border-collapse: collapse; width: 100%; }
 
 .goal-card-amounts {
   display: flex;
-  align-items: flex-end;
-  gap: 18px;
-  margin-bottom: 18px;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+  flex-wrap: nowrap;
 }
 .gca-current, .gca-target {
   display: flex; flex-direction: column; gap: 4px;
@@ -679,8 +679,8 @@ table { border-collapse: collapse; width: 100%; }
   font-weight: 600;
 }
 .gca-value {
-  font-size: 32px;
-  font-weight: 800;
+  font-size: 24px;
+  font-weight: 700;
   letter-spacing: -0.02em;
   font-family: 'JetBrains Mono', monospace;
   color: var(--text-primary);
@@ -688,20 +688,21 @@ table { border-collapse: collapse; width: 100%; }
 }
 .gca-target .gca-value { color: var(--text-secondary); font-weight: 700; }
 .gca-arrow {
-  font-size: 24px; color: var(--text-muted); font-weight: 300;
-  align-self: center; padding-bottom: 4px;
+  font-size: 20px; color: var(--text-muted); font-weight: 300;
+  align-self: center; padding-bottom: 2px;
 }
 .gca-progress { margin-left: auto; text-align: right; }
 .gca-pct {
-  font-size: 36px;
-  font-weight: 800;
+  font-size: 64px;
+  font-weight: 700;
   background: var(--accent-grad);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   line-height: 1;
 }
+@media (max-width: 700px) { .gca-pct { font-size: 48px; } }
 .gca-pct-label {
   font-size: 11px;
   color: var(--text-secondary);
@@ -711,7 +712,7 @@ table { border-collapse: collapse; width: 100%; }
   margin-top: 4px;
 }
 
-.goal-card .progress-wrap { margin-bottom: 16px; }
+.goal-card .progress-wrap { margin-bottom: 10px; padding: 6px 0 10px; }
 
 .goal-card-footer {
   display: flex;
@@ -719,7 +720,7 @@ table { border-collapse: collapse; width: 100%; }
   justify-content: space-between;
   gap: 14px;
   flex-wrap: wrap;
-  padding-bottom: 14px;
+  padding-bottom: 8px;
   border-bottom: 1px dashed var(--border);
 }
 .gcf-left { display: flex; gap: 22px; flex-wrap: wrap; }
@@ -731,8 +732,8 @@ table { border-collapse: collapse; width: 100%; }
 .goal-card-metrics {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 14px;
-  margin-top: 14px;
+  gap: 10px;
+  margin-top: 8px;
 }
 @media (max-width: 700px) {
   .goal-card-metrics { grid-template-columns: repeat(2, 1fr); }
