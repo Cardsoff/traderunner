@@ -81,8 +81,8 @@ function renderGrowthChart(plan, actual) {
   growthChart = new Chart($('#growthChart'), {
     type: 'line',
     data: { labels, datasets: [
-      { label:'План', data:planS, borderColor:'#4ea1ff', backgroundColor:c=>makeGrad(c,'rgba(78,161,255,0.30)','rgba(78,161,255,0)'), fill:true, tension:0.35, borderWidth:2, pointRadius:0 },
-      { label:'Факт', data:factS, borderColor:'#a96cff', backgroundColor:c=>makeGrad(c,'rgba(169,108,255,0.40)','rgba(169,108,255,0)'), fill:true, tension:0.35, borderWidth:2.5, pointRadius:0, spanGaps:true },
+      { label: t('equity.plan'), data:planS, borderColor:'#4ea1ff', backgroundColor:c=>makeGrad(c,'rgba(78,161,255,0.30)','rgba(78,161,255,0)'), fill:true, tension:0.35, borderWidth:2, pointRadius:0 },
+      { label: t('equity.fact'), data:factS, borderColor:'#a96cff', backgroundColor:c=>makeGrad(c,'rgba(169,108,255,0.40)','rgba(169,108,255,0)'), fill:true, tension:0.35, borderWidth:2.5, pointRadius:0, spanGaps:true },
     ]},
     options: {
       responsive:true, maintainAspectRatio:false, interaction:{mode:'index',intersect:false},
@@ -104,8 +104,8 @@ function renderReturnsChart(plan, actual) {
   returnsChart = new Chart($('#returnsChart'), {
     type: 'bar',
     data: { labels, datasets: [
-      { label:'План', data:planS, backgroundColor:'rgba(78,161,255,0.55)', borderRadius:3 },
-      ...(factS ? [{ label:'Факт', data:factS, backgroundColor:'rgba(169,108,255,0.85)', borderRadius:3 }] : []),
+      { label: t('equity.plan'), data:planS, backgroundColor:'rgba(78,161,255,0.55)', borderRadius:3 },
+      ...(factS ? [{ label: t('equity.fact'), data:factS, backgroundColor:'rgba(169,108,255,0.85)', borderRadius:3 }] : []),
     ]},
     options: {
       responsive:true, maintainAspectRatio:false,
@@ -116,7 +116,7 @@ function renderReturnsChart(plan, actual) {
           callbacks:{
             label: (c) => {
               if (c.parsed.y == null) return `${c.dataset.label}: —`;
-              const raw = c.dataset.label === 'Факт' ? factSraw[c.dataIndex] : c.parsed.y;
+              const raw = c.dataset.label === t('equity.fact') ? factSraw[c.dataIndex] : c.parsed.y;
               const clipped = Math.abs(raw) > CAP;
               return `${c.dataset.label}: ${raw.toFixed(2)}%` + (clipped ? ' (обрезано на графике)' : '');
             }
@@ -215,7 +215,7 @@ function render(opts = {}) {
       fcBanner.style.display = '';
     }
   } else if (d.forecast) {
-    fcEl.textContent = fmtDate(d.forecast.date) + (d.forecast.months_left ? ` · через ${d.forecast.months_left} мес` : ' · уже');
+    fcEl.textContent = fmtDate(d.forecast.date) + (d.forecast.months_left ? ' · ' + t('goal.forecast_months', d.forecast.months_left) : ' · ' + t('goal.forecast_already'));
     fcEl.style.color = '';
     if (fcBanner) fcBanner.style.display = 'none';
   } else {
