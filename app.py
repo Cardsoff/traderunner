@@ -2360,7 +2360,7 @@ def api_tiltmeter():
     """
     from datetime import datetime as _dt, timedelta as _td
     # Берём 10 последних закрытых сделок (по убыванию ts)
-    all_trades = db.get_trades_for_user(int(current_user.id))
+    all_trades = db.list_trades(user_id=int(current_user.id))
     trades = sorted([t for t in all_trades if t.get("ts")], key=lambda x: x["ts"], reverse=True)[:10]
     if not trades:
         return jsonify({
