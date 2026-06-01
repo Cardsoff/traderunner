@@ -3295,7 +3295,7 @@ function fireConfetti() {
       // Render grid
       grid.innerHTML = '';
       // Если 365D — делаем компактнее (мельче cells)
-      grid.style.gridAutoRows = (d.days_count > 100) ? 'minmax(14px, 1fr)' : 'minmax(28px, 1fr)';
+      grid.classList.toggle('dense', d.days_count > 100); grid.style.gridAutoRows = '';
       d.days.forEach(function (day) {
         const cell = document.createElement('div');
         cell.className = 'streak-cell sc-' + day.day_type;
