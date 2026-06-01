@@ -273,10 +273,10 @@ function render(opts = {}) {
       metricsBlock?.parentNode?.insertBefore(placeholder, metricsBlock);
     }
     const msg = gm.reason === 'no_goal'
-      ? '🎯 Задай свою цель — нажми ✏ и укажи сумму, доходность и ежемесячный взнос'
-      : '📭 В рамках цели пока нет сделок. Открой первую сделку — здесь появится статистика по этой цели.';
+      ? t('goal.placeholder_no_goal')
+      : t('goal.placeholder_no_trades');
     placeholder.innerHTML = `<div class="gep-msg">${esc(msg)}</div>` +
-      (gm.goal_start ? `<div class="gep-sub">Цель активна с ${esc(fmtDate(gm.goal_start))}</div>` : '');
+      (gm.goal_start ? `<div class="gep-sub">${esc(t('goal.active_since', fmtDate(gm.goal_start)))}</div>` : '');
   } else {
     if (metricsBlock) metricsBlock.style.display = '';
     if (placeholder) placeholder.remove();
@@ -316,7 +316,7 @@ function render(opts = {}) {
   // API status pill
   const ap = $('#apiStatus');
   ap.classList.toggle('ok', d.api_connected);
-  $('#apiStatusText').textContent = d.api_connected ? 'Bitunix · подключено' : 'Bitunix · не настроен';
+  $('#apiStatusText').textContent = d.api_connected ? t('header.bitunix_connected') : t('header.bitunix_not_set');
 
   // Stats (period from API)
   loadStats(_ui.period);
@@ -411,7 +411,7 @@ function renderSetupFilterChips(setups) {
   const box = $('#setupFilterChips'); if (!box) return;
   const used = new Set(_trades.map(t => t.setup).filter(Boolean));
   box.innerHTML =
-    `<button class="filter-chip ${_ui.filter_setup==null?'active':''}" data-setup="">Все (${_trades.length})</button>` +
+    `<button class="filter-chip ${_ui.filter_setup==null?'active':''}" data-setup="">${t('trades.filter_all_n', _trades.length)}</button>` +
     setups.filter(s => used.has(s)).map(s =>
       `<button class="filter-chip ${_ui.filter_setup===s?'active':''}" data-setup="${esc(s)}">${esc(s)} (${_trades.filter(t=>t.setup===s).length})</button>`
     ).join('');
@@ -603,14 +603,14 @@ function renderTradesPager(total, shown, page, pages) {
   if (!host) return;
   if (total <= TRADES_PER_PAGE && pages <= 1) {
     host.innerHTML = total > 0
-      ? `<span class="muted">Показано ${total} из ${total}</span><span></span>`
+      ? `<span class="muted">${t('trades.pagination_full', total, total)}</span><span></span>`
       : '';
     return;
   }
   const btn = (label, p, disabled) =>
     `<button class="btn btn-ghost" data-trades-page="${p}" ${disabled?'disabled':''} style="padding:4px 10px; min-width:36px;">${label}</button>`;
   host.innerHTML =
-    `<span class="muted">Показано ${shown} из ${total} (стр. ${page} / ${pages})</span>` +
+    `<span class="muted">${t('trades.pagination_paged', shown, total, page, pages)}</span>` +
     `<span style="display:inline-flex; gap:6px; align-items:center;">` +
       btn('« 1', 1, page === 1) +
       btn('‹', Math.max(1, page-1), page === 1) +
@@ -1958,7 +1958,7 @@ window.addEventListener('DOMContentLoaded', async () => {
       host.style.background = 'rgba(138,147,168,0.12)';
       host.style.color = 'var(--text-secondary)';
       host.title = p.hint || '';
-      host.innerHTML = '<span>📊</span><span>Темп: жду данных</span>';
+      host.innerHTML = '<span>📊</span><span>' + t('goal.pace_waiting').replace(/^📊\s*/,'') + '</span>';
       return;
     }
     const days = Math.abs(p.deltaDays);
@@ -2124,10 +2124,10 @@ window.addEventListener('DOMContentLoaded', async () => {
   function fmtTimeAgo(ms) {
     const sec = Math.floor((Date.now() - ms) / 1000);
     if (sec < 5) return 'только что';
-    if (sec < 60) return sec + ' сек назад';
+    if (sec < 60) return t('header.time_ago_sec', sec);
     const m = Math.floor(sec / 60);
-    if (m < 60) return m + ' мин назад';
-    return Math.floor(m / 60) + ' ч назад';
+    if (m < 60) return t('header.time_ago_min', m);
+    return t('header.time_ago_h', Math.floor(m / 60));
   }
 
   function renderPositions(data) {
@@ -2414,10 +2414,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (!tsMs) return 'ни разу';
     const sec = Math.floor((Date.now() - +tsMs) / 1000);
     if (sec < 30) return 'только что';
-    if (sec < 60) return sec + ' сек назад';
-    if (sec < 3600) return Math.floor(sec/60) + ' мин назад';
-    if (sec < 86400) return Math.floor(sec/3600) + ' ч назад';
-    return Math.floor(sec/86400) + ' дн назад';
+    if (sec < 60) return t('header.time_ago_sec', sec);
+    if (sec < 3600) return t('header.time_ago_min', Math.floor(sec/60));
+    if (sec < 86400) return t('header.time_ago_h', Math.floor(sec/3600));
+    return t('header.time_ago_d', Math.floor(sec/86400));
   }
   async function tick() {
     const el = document.getElementById('syncLastTs');
