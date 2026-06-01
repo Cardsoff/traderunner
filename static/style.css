@@ -7,7 +7,7 @@
   --accent: #7c5cff; --accent-2: #4ea1ff;
   --accent-grad: linear-gradient(135deg, #7c5cff 0%, #4ea1ff 100%);
   --green: #10c98a; --green-bg: rgba(16,201,138,0.12);
-  --red: #ff5a6c; --red-bg: rgba(255,90,108,0.12);
+  --red: #ff6b7a; --red-bg: rgba(255,107,122,0.12);
   --orange: #ffa033; --orange-bg: rgba(255,160,51,0.15);
   --blue: #4ea1ff; --blue-bg: rgba(78,161,255,0.12);
   --purple: #a96cff; --purple-bg: rgba(169,108,255,0.15);
@@ -209,7 +209,7 @@ table { border-collapse: collapse; width: 100%; }
 .kpi-icon-blue { background: linear-gradient(135deg, #4ea1ff, #2c7ff7); }
 .kpi-icon-purple { background: linear-gradient(135deg, #a96cff, #7c5cff); }
 .kpi-icon-orange { background: linear-gradient(135deg, #ffa033, #ff7a1f); }
-.kpi-icon-red { background: linear-gradient(135deg, #ff5a6c, #e8424d); }
+.kpi-icon-red { background: linear-gradient(135deg, #ff6b7a, #e8424d); }
 .kpi-label { font-size: 10.5px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
 .kpi-value { font-size: 18px; font-weight: 700; margin-top: 2px; letter-spacing: -0.01em; }
 .kpi-value.pos { color: var(--green); }
@@ -980,7 +980,7 @@ table { border-collapse: collapse; width: 100%; }
 .streak-cell:hover { outline: 2px solid #5a9be0; transform: scale(1.08); }
 .streak-cell.sc-no_trade { background: #1f2837; }
 .streak-cell.sc-loss { background: #7a2727; }
-.streak-cell.sc-big_loss { background: #ff5a6c; }
+.streak-cell.sc-big_loss { background: #ff6b7a; }
 .streak-cell.sc-neutral { background: #2a3548; }
 .streak-cell.sc-win { background: #22513f; }
 .streak-cell.sc-big_win { background: #10c98a; }
@@ -994,7 +994,7 @@ table { border-collapse: collapse; width: 100%; }
 }
 .streak-legend { display: flex; gap: 4px; align-items: center; color: var(--text-secondary); font-size: 11px; }
 .sl-cell { width: 11px; height: 11px; border-radius: 2px; display: inline-block; }
-.sl-bigloss { background: #ff5a6c; }
+.sl-bigloss { background: #ff6b7a; }
 .sl-loss { background: #7a2727; }
 .sl-none { background: #1f2837; }
 .sl-win { background: #22513f; }
@@ -1676,4 +1676,84 @@ table { border-collapse: collapse; width: 100%; }
   background: var(--orange-bg); color: var(--orange);
   border-radius: 6px; font-size: 11px; font-weight: 600;
   margin-left: 6px;
+}
+
+/* === Typography (Iter R5) — mono for numerics, tabular-nums for KPI === */
+.kpi-value, .gca-pct, .gca-value, .gcf-item b, .gcm-value, .ss-val, .mc-cell-pnl, .mc-cell-day,
+.stat-value, .tm-score {
+  font-variant-numeric: tabular-nums;
+}
+/* Trade table — JetBrains Mono для P&L / entry / exit / qty */
+.trades-table td.tnum, .trades-table td[data-num] {
+  font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+/* Универсально для всех числовых столбцов trades таблицы */
+.trades-table tbody td:nth-child(4), /* Entry */
+.trades-table tbody td:nth-child(5), /* Exit */
+.trades-table tbody td:nth-child(6), /* Size */
+.trades-table tbody td:nth-child(7)  /* P&L */ {
+  font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* === Mobile responsive (Iter R6) — breakpoint 768px === */
+@media (max-width: 768px) {
+  .container { padding: 0 12px; }
+
+  /* Tiltmeter 2-row */
+  .tiltmeter-bar {
+    grid-template-columns: auto 1fr;
+    padding: 8px 12px;
+    gap: 10px;
+  }
+  .tm-state { font-size: 12px; }
+  .tm-track { grid-column: 2 / 3; }
+  .tm-reasons { grid-column: 1 / -1; padding-top: 6px; font-size: 10px; flex-wrap: wrap; }
+  .tm-chip { padding: 2px 8px; font-size: 10px; }
+
+  /* KPI strip — горизонтальный scroll */
+  .kpi-strip {
+    grid-template-columns: repeat(6, minmax(105px, 1fr));
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+  .kpi-item { scroll-snap-align: start; }
+
+  /* Tabs row trades — wrap */
+  .tab-list { flex-wrap: wrap; gap: 4px; }
+  .tab { font-size: 11px; padding: 5px 8px; }
+
+  /* Monthly calendar тоньше */
+  .mc-card-header { gap: 8px; }
+  .mc-header-right { width: 100%; justify-content: space-between; }
+  .mc-cell-day { font-size: 9px; }
+  .mc-cell-pnl { font-size: 10px; }
+  .mc-cell-trades { font-size: 9px; }
+  .mc-cell { min-height: 42px; padding: 3px 4px; }
+
+  /* Trade table — горизонтальный scroll вместо обрезки */
+  .trades-table-wrap, .trades-table { font-size: 11px; }
+  .trades-table th, .trades-table td { padding: 6px 4px !important; }
+
+  /* Touch targets — кнопки не меньше 36px */
+  .icon-btn, .icon-btn-mini { min-width: 36px; min-height: 36px; }
+
+  /* Period switcher wrap */
+  .period-toggle { flex-wrap: wrap; gap: 2px; }
+  .period-toggle button { font-size: 11px; padding: 5px 8px; }
+}
+
+@media (max-width: 480px) {
+  .gca-value { font-size: 18px; }
+  .gca-arrow { font-size: 16px; }
+  .goal-card .gca-progress-hero .gca-pct { font-size: 36px; }
+  .gca-eyebrow { font-size: 8px; }
+  .kpi-value { font-size: 15px; }
+  .kpi-label { font-size: 9.5px; }
+  .mc-month-name { font-size: 12px; min-width: 90px; }
 }

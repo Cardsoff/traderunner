@@ -2857,7 +2857,7 @@ async function renderEquityDaily() {
           {
             label: 'Drawdown %',
             data: d.drawdown_pct.map(v => -v),  // инвертируем под линию
-            borderColor: '#ff5a6c',
+            borderColor: '#ff6b7a',
             backgroundColor: 'rgba(255,90,108,0.10)',
             fill: true, tension: 0.2, borderWidth: 1.5, pointRadius: 0,
             yAxisID: 'y2',
@@ -2934,7 +2934,7 @@ function fireConfetti() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   const ctx = canvas.getContext('2d');
-  const colors = ['#7c5cff', '#4ea1ff', '#10c98a', '#ff5a6c', '#ffa033', '#a96cff'];
+  const colors = ['#7c5cff', '#4ea1ff', '#10c98a', '#ff6b7a', '#ffa033', '#a96cff'];
   const particles = [];
   for (let i = 0; i < 150; i++) {
     particles.push({
@@ -3130,7 +3130,7 @@ function fireConfetti() {
       const sideEmoji = t.side === 'LONG' ? '🟢' : '🔴';
       title.textContent = sideEmoji + ' ' + t.symbol + ' · ' + (t.side || '');
       const pnlSign = (t.pnl_usd >= 0 ? '+' : '');
-      const pnlColor = t.pnl_usd >= 0 ? '#10c98a' : '#ff5a6c';
+      const pnlColor = t.pnl_usd >= 0 ? '#10c98a' : '#ff6b7a';
       subtitle.innerHTML = 'Entry: <b>' + (t.entry_price || '—') + '</b> → Exit: <b>' + (t.exit_price || '—') + '</b> · ' +
         'P&L: <b style="color:' + pnlColor + '">' + pnlSign + (t.pnl_usd || 0).toFixed(2) + '$ (' + pnlSign + (t.pnl_pct || 0).toFixed(2) + '%)</b>';
       renderChart(j.candles, t);
@@ -3168,9 +3168,9 @@ function fireConfetti() {
       rightPriceScale: { borderColor: '#1f2837' },
     });
     _series = _chart.addCandlestickSeries({
-      upColor: '#10c98a', downColor: '#ff5a6c',
-      borderUpColor: '#10c98a', borderDownColor: '#ff5a6c',
-      wickUpColor: '#10c98a', wickDownColor: '#ff5a6c',
+      upColor: '#10c98a', downColor: '#ff6b7a',
+      borderUpColor: '#10c98a', borderDownColor: '#ff6b7a',
+      wickUpColor: '#10c98a', wickDownColor: '#ff6b7a',
     });
     _series.setData(candles);
 
@@ -3195,7 +3195,7 @@ function fireConfetti() {
     if (exitPrice) {
       _series.createPriceLine({
         price: exitPrice,
-        color: pnlPositive ? '#10c98a' : '#ff5a6c',
+        color: pnlPositive ? '#10c98a' : '#ff6b7a',
         lineWidth: 1,
         lineStyle: window.LightweightCharts.LineStyle.Dashed,
         axisLabelVisible: true,
@@ -3213,7 +3213,7 @@ function fireConfetti() {
         // LONG → купили, ждём рост → стрелка ВВЕРХ под баром
         // SHORT → продали, ждём падение → стрелка ВНИЗ над баром
         position: isLong ? 'belowBar' : 'aboveBar',
-        color: isLong ? '#10c98a' : '#ff5a6c',
+        color: isLong ? '#10c98a' : '#ff6b7a',
         shape: isLong ? 'arrowUp' : 'arrowDown',
         size: 2,
       });
@@ -3228,7 +3228,7 @@ function fireConfetti() {
       markers.push({
         time: trade.exit_ts,
         position: priceMoved ? 'aboveBar' : 'belowBar',
-        color: pnlPositive ? '#10c98a' : '#ff5a6c',
+        color: pnlPositive ? '#10c98a' : '#ff6b7a',
         shape: priceMoved ? 'arrowUp' : 'arrowDown',
         size: 2,
       });
@@ -3494,7 +3494,7 @@ function fireConfetti() {
     if (lg) {
       if (tab === 'daily') {
         lg.innerHTML = '<div class="legend-item"><span class="ldot" style="background:#10c98a;"></span>Equity</div>' +
-                       '<div class="legend-item"><span class="ldot" style="background:#ff5a6c;"></span>Drawdown %</div>';
+                       '<div class="legend-item"><span class="ldot" style="background:#ff6b7a;"></span>Drawdown %</div>';
       } else {
         lg.innerHTML = '<div class="legend-item"><span class="ldot dot-plan"></span><span data-i18n="equity.plan">' +
                        (window.t ? t('equity.plan') : 'Plan') + '</span></div>' +
