@@ -3259,6 +3259,120 @@ function fireConfetti() {
   window.openTradeChart = openChartModal;
 })();
 
+// ===== Streak Calendar (Iter 3) =====
+(function () {
+  let _scope = 'goal';
+  const todayStr = new Date().toISOString().slice(0, 10);
+
+  function fmtDate(s) {
+    try {
+      const lc = (window.i18n && window.i18n.getLang() === 'en') ? 'en-US' : 'ru-RU';
+      return new Date(s).toLocaleDateString(lc, {day:'numeric', month:'short', year:'numeric'});
+    } catch { return s; }
+  }
+  function tradesNoun(n) {
+    if (!window.i18n) return n + ' trades';
+    const last = n % 10, last2 = n % 100;
+    if (last === 1 && last2 !== 11) return t('streak.tooltip_trades_one', n);
+    if ([2,3,4].includes(last) && ![12,13,14].includes(last2)) return t('streak.tooltip_trades_few', n);
+    return t('streak.tooltip_trades_many', n);
+  }
+  async function load() {
+    const grid = document.getElementById('streakGrid');
+    const detail = document.getElementById('streakDetail');
+    const bestEl = document.getElementById('streakBest');
+    const worstEl = document.getElementById('streakWorst');
+    const curEl = document.getElementById('streakCurrent');
+    if (!grid) return;
+    grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:14px; color: var(--text-secondary); font-size:12px;">Loading…</div>';
+    try {
+      const r = await fetch('/api/analytics/streak-calendar?scope=' + encodeURIComponent(_scope), {credentials:'include'});
+      const d = await r.json();
+      if (!r.ok || !d.ok) {
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:14px; color: var(--red); font-size:12px;">Error: ' + (d.error || r.status) + '</div>';
+        return;
+      }
+      // Render grid
+      grid.innerHTML = '';
+      // Если 365D — делаем компактнее (мельче cells)
+      grid.style.gridAutoRows = (d.days_count > 100) ? 'minmax(14px, 1fr)' : 'minmax(28px, 1fr)';
+      d.days.forEach(function (day) {
+        const cell = document.createElement('div');
+        cell.className = 'streak-cell sc-' + day.day_type;
+        if (day.date === todayStr) cell.classList.add('sc-today');
+        cell.dataset.date = day.date;
+        cell.dataset.trades = day.trades;
+        cell.dataset.pnl = day.net_pnl;
+        cell.dataset.type = day.day_type;
+        cell.addEventListener('mouseenter', function () {
+          const td = (parseInt(this.dataset.trades) || 0);
+          const pnl = parseFloat(this.dataset.pnl) || 0;
+          let html = '<b>' + fmtDate(this.dataset.date) + '</b> · ';
+          if (td === 0) {
+            html += '<span style="color: var(--text-tertiary);">' + (window.t ? t('streak.tooltip_no_trades') : 'no trades') + '</span>';
+          } else {
+            const sign = pnl >= 0 ? '+' : '';
+            const color = pnl >= 0 ? '#10c98a' : '#ff5a6c';
+            html += '<span>' + tradesNoun(td) + '</span> · <b style="color:' + color + ';">' + sign + '$' + pnl.toFixed(2) + '</b>';
+          }
+          detail.innerHTML = html;
+        });
+        grid.appendChild(cell);
+      });
+      // Streak stats
+      bestEl.textContent = d.best_win_streak || 0;
+      worstEl.textContent = d.best_loss_streak || 0;
+      if (d.current_streak && d.current_kind) {
+        if (d.current_kind === 'win') {
+          curEl.textContent = '+' + d.current_streak;
+          curEl.className = 'ss-val pos';
+        } else {
+          curEl.textContent = '−' + d.current_streak;
+          curEl.className = 'ss-val neg';
+        }
+      } else {
+        curEl.textContent = '—';
+        curEl.className = 'ss-val';
+      }
+    } catch (e) {
+      grid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:14px; color: var(--red); font-size:12px;">' + e.message + '</div>';
+    }
+  }
+
+  // Switcher
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.st-tab');
+    if (!btn) return;
+    document.querySelectorAll('.st-tab').forEach(function (b) { b.classList.toggle('active', b === btn); });
+    _scope = btn.getAttribute('data-st-scope') || 'goal';
+    load();
+  });
+
+  // Reload on i18n changed (для обновления подписей в detail)
+  document.addEventListener('i18n:changed', function () {
+    // Просто перерисуем — labels в HTML обновятся через data-i18n auto-render
+    load();
+  });
+
+  // Initial load после загрузки страницы (через 500мс чтобы i18n успел инициализироваться)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(load, 500); });
+  } else {
+    setTimeout(load, 500);
+  }
+  // Также перезагружаем после loadAll (когда юзер сделает sync — calendar может обновиться)
+  if (typeof window !== 'undefined') {
+    const origLoadAll = window.loadAll;
+    if (typeof origLoadAll === 'function') {
+      window.loadAll = async function () {
+        const r = await origLoadAll.apply(this, arguments);
+        load();
+        return r;
+      };
+    }
+  }
+})();
+
 // ===== Equity tabs (Iter 2B) =====
 (function () {
   document.addEventListener('click', function (e) {
