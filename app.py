@@ -2352,6 +2352,56 @@ def api_report_pdf():
 
 
 
+@app.route("/api/analytics/heatmap-hours")
+@_login_required
+def api_heatmap_hours():
+    """
+    Heatmap «час × день недели» — где трейдер торгует лучше/хуже.
+    Returns: {grid: 7×24 matrix [{trades, wins, net_pnl}], totals, best_cell, worst_cell}
+    """
+    all_trades = db.list_trades(user_id=int(current_user.id))
+    if not all_trades:
+        return jsonify({"ok": True, "grid": [], "total_trades": 0})
+    # 7 строк (Mon=0..Sun=6) × 24 часа
+    grid = [[{"trades": 0, "wins": 0, "losses": 0, "net_pnl": 0.0} for _ in range(24)] for _ in range(7)]
+    for t in all_trades:
+        try:
+            ts = t.get("ts")
+            if isinstance(ts, str):
+                dt = datetime.fromisoformat(ts.replace("Z","").split("+")[0])
+            else:
+                dt = ts
+            wd = dt.weekday()  # 0 = Monday
+            hr = dt.hour
+            pnl = float(t.get("pnl_usd") or 0) - float(t.get("fee_usd") or 0)
+            cell = grid[wd][hr]
+            cell["trades"] += 1
+            cell["net_pnl"] += pnl
+            if pnl > 0: cell["wins"] += 1
+            elif pnl < 0: cell["losses"] += 1
+        except Exception:
+            continue
+    # Round
+    for row in grid:
+        for cell in row:
+            cell["net_pnl"] = round(cell["net_pnl"], 2)
+            decisive = cell["wins"] + cell["losses"]
+            cell["winrate"] = round(cell["wins"] / decisive * 100, 1) if decisive else 0
+    # Best / Worst cells
+    all_cells = [(wd, hr, c) for wd, row in enumerate(grid) for hr, c in enumerate(row) if c["trades"] >= 3]
+    best = max(all_cells, key=lambda x: x[2]["net_pnl"], default=None) if all_cells else None
+    worst = min(all_cells, key=lambda x: x[2]["net_pnl"], default=None) if all_cells else None
+    max_abs = max([abs(c["net_pnl"]) for row in grid for c in row], default=1.0) or 1.0
+    return jsonify({
+        "ok": True,
+        "grid": grid,
+        "total_trades": len(all_trades),
+        "max_abs_pnl": max_abs,
+        "best_cell": {"wd": best[0], "hr": best[1], "pnl": best[2]["net_pnl"], "trades": best[2]["trades"]} if best else None,
+        "worst_cell": {"wd": worst[0], "hr": worst[1], "pnl": worst[2]["net_pnl"], "trades": worst[2]["trades"]} if worst else None,
+    })
+
+
 @app.route("/api/analytics/tiltmeter")
 @_login_required
 def api_tiltmeter():
