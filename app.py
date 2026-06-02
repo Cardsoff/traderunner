@@ -981,7 +981,13 @@ def compute_goal_metrics():
         if cum > peak: peak = cum
         dd = peak - cum
         if dd > max_dd_abs: max_dd_abs = dd
-    base = max(float(get_effective_start_capital() or 0), 1.0)
+    # Sprint A: при fallback-режиме (новая цель + старые сделки) start_capital может быть 0 →
+    # используем |min_cum_pnl| как knowledgeable базу
+    eff_start = float(get_effective_start_capital() or 0)
+    if fallback and eff_start == 0:
+        # base = пик equity по cum_pnl
+        eff_start = max(peak, abs(min(0, cum)), 100.0)
+    base = max(eff_start, 1.0)
     mdd_pct = min(max_dd_abs / (base + peak) * 100 if (base + peak) > 0 else 0, 100.0)
     # Profit Factor = gross profit / gross loss
     gross_profit = sum(float(t["pnl_usd"] or 0) for t in trades if (t["pnl_usd"] or 0) > 0)
