@@ -447,5 +447,13 @@
   "pagination": {
     "per_page": "per page",
     "all": "All"
+  },
+  "heatmap": {
+    "title": "🔥 Heatmap: hour × day of week",
+    "sub": "Where you win, where you bleed · all trades",
+    "legend": "P&L:",
+    "best": "Best window",
+    "worst": "Worst window",
+    "no_data": "Not enough data for heatmap (need 10+ trades)"
   }
 }
