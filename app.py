@@ -952,16 +952,9 @@ def compute_goal_metrics():
         end_dt = None  # активная — до сейчас
     trades = _trades_in_range(start_dt, end_dt)
     if not trades:
-        # Sprint A fallback: показываем overall metrics если в цели 0 сделок но есть в журнале
-        all_trades = db.list_trades(user_id=int(current_user.id))
-        if all_trades:
-            trades = all_trades  # fallback to all trades
-            fallback = True
-        else:
-            return {"is_empty_for_goal": True, "reason": "no_trades_in_goal_range",
-                    "goal_start": goal.get("created_at")}
-    else:
-        fallback = False
+        # KPI strip относится строго к активной цели — если 0 сделок, показываем placeholder
+        return {"is_empty_for_goal": True, "reason": "no_trades_in_goal_range",
+                "goal_start": goal.get("created_at")}
     # Stats
     wins = sum(1 for t in trades if (t["pnl_usd"] or 0) > 0)
     losses = sum(1 for t in trades if (t["pnl_usd"] or 0) < 0)
@@ -981,13 +974,7 @@ def compute_goal_metrics():
         if cum > peak: peak = cum
         dd = peak - cum
         if dd > max_dd_abs: max_dd_abs = dd
-    # Sprint A: при fallback-режиме (новая цель + старые сделки) start_capital может быть 0 →
-    # используем |min_cum_pnl| как knowledgeable базу
-    eff_start = float(get_effective_start_capital() or 0)
-    if fallback and eff_start == 0:
-        # base = пик equity по cum_pnl
-        eff_start = max(peak, abs(min(0, cum)), 100.0)
-    base = max(eff_start, 1.0)
+    base = max(float(get_effective_start_capital() or 0), 1.0)
     mdd_pct = min(max_dd_abs / (base + peak) * 100 if (base + peak) > 0 else 0, 100.0)
     # Profit Factor = gross profit / gross loss
     gross_profit = sum(float(t["pnl_usd"] or 0) for t in trades if (t["pnl_usd"] or 0) > 0)
@@ -1000,7 +987,6 @@ def compute_goal_metrics():
         pf = 0.0
     return {
         "is_empty_for_goal": False,
-        "fallback_all_trades": fallback,
         "goal_start": goal.get("created_at"),
         "total": total, "wins": wins, "losses": losses,
         "winrate": round(winrate, 1),
