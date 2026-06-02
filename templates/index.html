@@ -74,6 +74,30 @@
 </section>
 
 <main class="container">
+  <!-- Welcome banner (Sprint B7) — показывается JS при первом заходе с 0 сделок -->
+  <section class="welcome-banner" id="welcomeBanner" style="display:none;">
+    <div class="wb-head">
+      <div class="wb-title" data-i18n="welcome.title">👋 Привет! Начни с этих 3 шагов</div>
+      <button class="wb-dismiss" id="welcomeDismiss" title="Скрыть подсказку" data-i18n-title="welcome.btn_dismiss">✕</button>
+    </div>
+    <div class="wb-steps">
+      <div class="wb-step">
+        <div class="wb-step-title" data-i18n="welcome.step1_title">1️⃣ Подключи биржу</div>
+        <div class="wb-step-desc" data-i18n="welcome.step1_desc">Bitunix API-ключи → автоимпорт</div>
+        <button class="wb-step-btn" data-action="open-creds" data-i18n="welcome.btn_setup_keys">Подключить ключи</button>
+      </div>
+      <div class="wb-step">
+        <div class="wb-step-title" data-i18n="welcome.step2_title">2️⃣ Поставь цель</div>
+        <div class="wb-step-desc" data-i18n="welcome.step2_desc">Куда идём — увидишь прогресс</div>
+        <button class="wb-step-btn" data-action="open-goal-onb" data-i18n="welcome.btn_set_goal">Создать цель</button>
+      </div>
+      <div class="wb-step">
+        <div class="wb-step-title" data-i18n="welcome.step3_title">3️⃣ Тегни сетапом</div>
+        <div class="wb-step-desc" data-i18n="welcome.step3_desc">Click «—» в Setup-колонке</div>
+      </div>
+    </div>
+  </section>
+
   <div class="goal-achieved" id="goalAchievedBanner">
     <div class="ga-text">
       <div class="ga-emoji">🎯</div>
@@ -155,7 +179,7 @@
 
   <!-- KPI strip (Iter 2): 5 кубиков под Goal card -->
   <section class="kpi-strip">
-    <div class="kpi-item" title="Net P&L = сумма прибыли − комиссии за период активной цели">
+    <div class="kpi-item" data-i18n-title="tooltip.net_pnl" title="Net P&L = сумма прибыли − комиссии за период активной цели">
       <div class="kpi-label">Net P&L</div>
       <div class="kpi-value" id="metricNetPnl">$0</div>
     </div>
@@ -163,15 +187,15 @@
       <div class="kpi-label" data-i18n="stat.trades">Сделок</div>
       <div class="kpi-value" id="metricTrades">0</div>
     </div>
-    <div class="kpi-item" title="Winrate = wins / (wins + losses). Break-even не учитываются">
+    <div class="kpi-item" data-i18n-title="tooltip.winrate" title="Winrate = wins / (wins + losses). Break-even не учитываются">
       <div class="kpi-label">Winrate</div>
       <div class="kpi-value" id="metricWinrate">0%</div>
     </div>
-    <div class="kpi-item" title="Profit Factor = gross profit / gross loss. Чем выше 1.0 — тем лучше">
+    <div class="kpi-item" data-i18n-title="tooltip.profit_factor" title="Profit Factor = gross profit / gross loss. Чем выше 1.0 — тем лучше">
       <div class="kpi-label">Profit Factor</div>
       <div class="kpi-value" id="metricProfitFactor">—</div>
     </div>
-    <div class="kpi-item" title="Максимальная просадка от пика cumulative net P&L">
+    <div class="kpi-item" data-i18n-title="tooltip.max_dd" title="Максимальная просадка от пика cumulative net P&L">
       <div class="kpi-label">📉 Max DD</div>
       <div class="kpi-value" id="metricDrawdown">0%</div>
     </div>
