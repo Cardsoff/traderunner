@@ -438,7 +438,7 @@ function renderSetupFilterChips(setups) {
 
 // текущая страница списка сделок (1-индексация)
 if (typeof _ui.tradesPage === 'undefined') _ui.tradesPage = 1;
-const TRADES_PER_PAGE = 100;
+let TRADES_PER_PAGE = parseInt(localStorage.getItem("tr_page_size") || "100", 10);
 
 // === Универсальный фильтр для журналов сделок и депозитов ===
 function applyFilterBar(items, opts) {
@@ -614,10 +614,13 @@ function renderTradesPager(total, shown, page, pages) {
     }
   }
   if (!host) return;
+  // B5: dropdown размер страницы (всегда показываем)
+  const pageSizeSelect = `<select id="tradesPageSizeSel" style="background:var(--bg-elev);border:1px solid var(--border);color:var(--text-primary);padding:3px 6px;border-radius:4px;font-size:11.5px;">` +
+    [100,500,1000,99999].map(n => `<option value="${n}"${n===TRADES_PER_PAGE?' selected':''}>${n===99999?(t?t('pagination.all'):'All'):n}/${t?t('pagination.per_page'):'per page'}</option>`).join('') + `</select>`;
   if (total <= TRADES_PER_PAGE && pages <= 1) {
     host.innerHTML = total > 0
-      ? `<span class="muted">${t('trades.pagination_full', total, total)}</span><span></span>`
-      : '';
+      ? `<span class="muted">${t('trades.pagination_full', total, total)}</span>${pageSizeSelect}`
+      : pageSizeSelect;
     return;
   }
   const btn = (label, p, disabled) =>
@@ -625,6 +628,7 @@ function renderTradesPager(total, shown, page, pages) {
   host.innerHTML =
     `<span class="muted">${t('trades.pagination_paged', shown, total, page, pages)}</span>` +
     `<span style="display:inline-flex; gap:6px; align-items:center;">` +
+      pageSizeSelect +
       btn('« 1', 1, page === 1) +
       btn('‹', Math.max(1, page-1), page === 1) +
       `<span style="padding:0 4px;">${page}</span>` +
@@ -3589,5 +3593,102 @@ function fireConfetti() {
         }
       }, 200);
     });
+  });
+})();
+
+
+// ===== B5: pagination size selector + B5: hotkeys (J/K/F) + B7: welcome banner =====
+(function () {
+  // Page size dropdown
+  document.addEventListener('change', function (e) {
+    if (e.target && e.target.id === 'tradesPageSizeSel') {
+      const v = parseInt(e.target.value, 10);
+      if (v > 0) {
+        TRADES_PER_PAGE = v;
+        localStorage.setItem('tr_page_size', String(v));
+        if (typeof renderTradesTable === 'function') {
+          _ui.tradesPage = 1;
+          renderTradesTable();
+        }
+      }
+    }
+  });
+
+  // Hotkeys (только когда фокус не в input/textarea)
+  document.addEventListener('keydown', function (e) {
+    const tag = (e.target && e.target.tagName || '').toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    // / = focus search
+    if (e.key === '/') {
+      const search = document.getElementById('tradesSearch') || document.querySelector('input[type="search"]');
+      if (search) { e.preventDefault(); search.focus(); search.select(); }
+    }
+    // J/K — навигация по строкам таблицы
+    if (e.key === 'j' || e.key === 'k') {
+      const rows = document.querySelectorAll('tr[data-trade-row="1"]');
+      if (!rows.length) return;
+      let cur = document.querySelector('tr[data-trade-row="1"].kbd-focus');
+      let idx = cur ? Array.from(rows).indexOf(cur) : -1;
+      if (e.key === 'j') idx = Math.min(rows.length - 1, idx + 1);
+      else idx = Math.max(0, idx - 1);
+      if (cur) cur.classList.remove('kbd-focus');
+      rows[idx].classList.add('kbd-focus');
+      rows[idx].scrollIntoView({block: 'nearest', behavior: 'smooth'});
+      e.preventDefault();
+    }
+    // Enter — открыть chart modal для выделенной строки
+    if (e.key === 'Enter') {
+      const row = document.querySelector('tr[data-trade-row="1"].kbd-focus');
+      if (row && window.openTradeChart) {
+        const id = parseInt(row.getAttribute('data-trade-id'));
+        if (id) window.openTradeChart(id);
+        e.preventDefault();
+      }
+    }
+  });
+
+  // B7: Welcome banner показывается если 0 сделок и не dismissed
+  function maybeShowWelcome() {
+    const banner = document.getElementById('welcomeBanner');
+    if (!banner) return;
+    if (localStorage.getItem('welcome_dismissed') === '1') return;
+    // Если в журнале есть сделки (даже не в цели) — не показываем
+    const tradesNow = (window._trades && window._trades.length) || 0;
+    if (tradesNow === 0) {
+      banner.style.display = 'block';
+    } else {
+      banner.style.display = 'none';
+    }
+  }
+  setTimeout(maybeShowWelcome, 1500);
+  // После каждого loadAll
+  if (typeof window !== 'undefined') {
+    const orig = window.loadAll;
+    if (typeof orig === 'function') {
+      window.loadAll = async function () {
+        const r = await orig.apply(this, arguments);
+        maybeShowWelcome();
+        return r;
+      };
+    }
+  }
+  // Welcome buttons
+  document.addEventListener('click', function (e) {
+    if (e.target.id === 'welcomeDismiss') {
+      localStorage.setItem('welcome_dismissed', '1');
+      const banner = document.getElementById('welcomeBanner');
+      if (banner) banner.style.display = 'none';
+    } else if (e.target.dataset && e.target.dataset.action === 'open-creds') {
+      const btn = document.getElementById('settingsBtn') || document.querySelector('[data-open="credentialsModal"]');
+      if (btn) btn.click();
+    } else if (e.target.dataset && e.target.dataset.action === 'open-goal-onb') {
+      const onb = document.getElementById('goalOnbModal');
+      if (onb) onb.style.display = 'flex';
+      else {
+        const edit = document.getElementById('editGoalBtn');
+        if (edit) edit.click();
+      }
+    }
   });
 })();

@@ -1835,3 +1835,47 @@ html, body {
   .status-pill { font-size: 10px; padding: 3px 6px; }
   .container { padding: 0 6px; }
 }
+
+
+/* === Sprint B (B4/B5/B7): welcome banner, kbd focus, tooltip-hover === */
+.welcome-banner {
+  background: linear-gradient(135deg, rgba(90,155,224,0.10) 0%, rgba(16,201,138,0.06) 100%);
+  border: 1px solid rgba(90,155,224,0.30);
+  border-radius: var(--r-lg);
+  padding: 16px 20px;
+  margin-bottom: 14px;
+}
+.wb-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.wb-title { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+.wb-dismiss {
+  background: transparent; border: 0; color: var(--text-secondary);
+  width: 28px; height: 28px; border-radius: 6px; cursor: pointer;
+  font-size: 14px;
+}
+.wb-dismiss:hover { background: var(--bg-elev); color: var(--text-primary); }
+.wb-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.wb-step {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.wb-step-title { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.wb-step-desc { font-size: 11.5px; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.4; }
+.wb-step-btn {
+  background: var(--accent); color: white; border: 0;
+  padding: 6px 12px; border-radius: 6px; cursor: pointer;
+  font-size: 12px; font-weight: 500; font-family: inherit;
+}
+.wb-step-btn:hover { background: var(--accent-h); }
+@media (max-width: 700px) {
+  .wb-steps { grid-template-columns: 1fr; }
+  .wb-step { padding: 10px 12px; }
+}
+
+/* B5: Keyboard focus row in trades table */
+tr[data-trade-row="1"].kbd-focus {
+  background: rgba(90,155,224,0.10) !important;
+  outline: 2px solid #5a9be0;
+  outline-offset: -2px;
+}
