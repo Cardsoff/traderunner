@@ -415,6 +415,28 @@
       <div id="advancedContent" class="advanced-content">
         <div class="muted" style="padding: 24px; text-align:center;" data-i18n="advanced.loading">Загружаю аналитику…</div>
       </div>
+      <!-- B3: Heatmap час × день недели (по всем сделкам) -->
+      <section class="heatmap-card">
+        <div class="heatmap-head">
+          <div>
+            <div class="heatmap-title" data-i18n="heatmap.title">🔥 Heatmap: час × день недели</div>
+            <div class="heatmap-sub" data-i18n="heatmap.sub">Где сильнее, где сливаешь · по всем сделкам</div>
+          </div>
+          <div class="heatmap-best" id="heatmapBest"></div>
+        </div>
+        <div class="heatmap-grid-wrap">
+          <div class="heatmap-hours-axis" id="heatmapHoursAxis"></div>
+          <div class="heatmap-grid" id="heatmapGrid"></div>
+        </div>
+        <div class="heatmap-legend">
+          <span data-i18n="heatmap.legend">P&L:</span>
+          <span class="hl-cell" style="background:#ff6b7a"></span> −max
+          <span class="hl-cell" style="background:#7a2727"></span>
+          <span class="hl-cell" style="background:#1f2837"></span> 0
+          <span class="hl-cell" style="background:#22513f"></span>
+          <span class="hl-cell" style="background:#10c98a"></span> +max
+        </div>
+      </section>
     </div>
 
     <div class="tab-panel" id="tab-archive">
