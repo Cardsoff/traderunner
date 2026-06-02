@@ -3692,3 +3692,79 @@ function fireConfetti() {
     }
   });
 })();
+
+
+// ===== B3 Heatmap (час × день недели) =====
+(function () {
+  const DAYS_RU = ['ПН','ВТ','СР','ЧТ','ПТ','СБ','ВС'];
+  const DAYS_EN = ['MON','TUE','WED','THU','FRI','SAT','SUN'];
+  function colorFor(pnl, maxAbs) {
+    if (pnl === 0) return '#1f2837';
+    const intensity = Math.min(1, Math.abs(pnl) / Math.max(maxAbs, 1));
+    if (pnl > 0) {
+      const g = Math.floor(34 + (201-34) * intensity);
+      return `rgba(16,${g},138,${0.3 + 0.7*intensity})`;
+    } else {
+      const r = Math.floor(122 + (255-122) * intensity);
+      return `rgba(${r},107,122,${0.3 + 0.7*intensity})`;
+    }
+  }
+  async function loadHeatmap() {
+    const grid = document.getElementById('heatmapGrid');
+    const axis = document.getElementById('heatmapHoursAxis');
+    const best = document.getElementById('heatmapBest');
+    if (!grid || !axis) return;
+    try {
+      const r = await fetch('/api/analytics/heatmap-hours', {credentials:'include'});
+      const d = await r.json();
+      if (!r.ok || !d.ok) return;
+      if (d.total_trades < 10 || !d.grid.length) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text-secondary);font-size:12px;">' + (window.t ? t('heatmap.no_data') : 'Not enough data') + '</div>';
+        return;
+      }
+      const isEn = (window.i18n && window.i18n.getLang() === 'en');
+      const days = isEn ? DAYS_EN : DAYS_RU;
+      // Render hours axis (0-23)
+      axis.innerHTML = Array.from({length:24}, (_,h) => `<span>${h}</span>`).join('');
+      // Render grid: 7 rows
+      const html = [];
+      for (let wd = 0; wd < 7; wd++) {
+        html.push(`<div class="heatmap-day-label">${days[wd]}</div>`);
+        for (let hr = 0; hr < 24; hr++) {
+          const c = d.grid[wd][hr];
+          const sign = c.net_pnl >= 0 ? '+' : '';
+          const tip = c.trades === 0
+            ? `${days[wd]} ${hr}:00 · no trades`
+            : `${days[wd]} ${hr}:00 · ${c.trades} trades · WR ${c.winrate}% · ${sign}$${c.net_pnl}`;
+          html.push(`<div class="heatmap-cell" style="background:${colorFor(c.net_pnl, d.max_abs_pnl)}" title="${tip}"></div>`);
+        }
+      }
+      grid.innerHTML = html.join('');
+      // Best/Worst label
+      if (best && d.best_cell && d.worst_cell) {
+        const bestLabel = isEn ? 'Best' : 'Лучшее';
+        const worstLabel = isEn ? 'Worst' : 'Худшее';
+        best.innerHTML = `<div>${bestLabel}: <b>${days[d.best_cell.wd]} ${d.best_cell.hr}:00</b> +$${d.best_cell.pnl}</div>` +
+                        `<div class="hb-worst">${worstLabel}: <b style="color:#ff6b7a">${days[d.worst_cell.wd]} ${d.worst_cell.hr}:00</b> $${d.worst_cell.pnl}</div>`;
+      }
+    } catch (e) {
+      grid.innerHTML = '<div style="color:var(--red);padding:14px;">' + e.message + '</div>';
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(loadHeatmap, 1500); });
+  } else {
+    setTimeout(loadHeatmap, 1500);
+  }
+  document.addEventListener('i18n:changed', loadHeatmap);
+  if (typeof window !== 'undefined') {
+    const orig = window.loadAll;
+    if (typeof orig === 'function') {
+      window.loadAll = async function () {
+        const r = await orig.apply(this, arguments);
+        loadHeatmap();
+        return r;
+      };
+    }
+  }
+})();

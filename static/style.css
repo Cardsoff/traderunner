@@ -1879,3 +1879,66 @@ tr[data-trade-row="1"].kbd-focus {
   outline: 2px solid #5a9be0;
   outline-offset: -2px;
 }
+
+
+/* === B3 Heatmap (час × день недели) === */
+.heatmap-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 16px 18px;
+  margin-top: 14px;
+}
+.heatmap-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; gap: 12px; flex-wrap: wrap; }
+.heatmap-title { font-size: 15px; font-weight: 600; }
+.heatmap-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.heatmap-best { font-size: 12px; color: var(--text-secondary); text-align: right; }
+.heatmap-best b { color: var(--green); font-family: 'JetBrains Mono', monospace; }
+.heatmap-best .hb-worst b { color: var(--red); }
+.heatmap-grid-wrap {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  gap: 4px;
+  overflow-x: auto;
+}
+.heatmap-hours-axis {
+  display: grid;
+  grid-template-columns: repeat(24, minmax(22px, 1fr));
+  gap: 2px;
+  grid-column: 2 / 3;
+  font-size: 9px;
+  color: var(--text-tertiary);
+  text-align: center;
+  padding-bottom: 4px;
+  min-width: 528px;
+}
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: 36px repeat(24, minmax(22px, 1fr));
+  gap: 2px;
+  min-width: 568px;
+  grid-column: 1 / -1;
+}
+.heatmap-day-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-align: right;
+  padding-right: 6px;
+  align-self: center;
+  text-transform: uppercase;
+}
+.heatmap-cell {
+  aspect-ratio: 1;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: outline 0.12s;
+  outline: 0 solid transparent;
+}
+.heatmap-cell:hover { outline: 1.5px solid var(--accent); transform: scale(1.1); }
+.heatmap-legend {
+  display: flex; gap: 6px; align-items: center;
+  font-size: 11px; color: var(--text-secondary);
+  margin-top: 10px;
+}
+.hl-cell { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
