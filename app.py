@@ -952,8 +952,16 @@ def compute_goal_metrics():
         end_dt = None  # активная — до сейчас
     trades = _trades_in_range(start_dt, end_dt)
     if not trades:
-        return {"is_empty_for_goal": True, "reason": "no_trades_in_goal_range",
-                "goal_start": goal.get("created_at")}
+        # Sprint A fallback: показываем overall metrics если в цели 0 сделок но есть в журнале
+        all_trades = db.list_trades(user_id=int(current_user.id))
+        if all_trades:
+            trades = all_trades  # fallback to all trades
+            fallback = True
+        else:
+            return {"is_empty_for_goal": True, "reason": "no_trades_in_goal_range",
+                    "goal_start": goal.get("created_at")}
+    else:
+        fallback = False
     # Stats
     wins = sum(1 for t in trades if (t["pnl_usd"] or 0) > 0)
     losses = sum(1 for t in trades if (t["pnl_usd"] or 0) < 0)
@@ -986,6 +994,7 @@ def compute_goal_metrics():
         pf = 0.0
     return {
         "is_empty_for_goal": False,
+        "fallback_all_trades": fallback,
         "goal_start": goal.get("created_at"),
         "total": total, "wins": wins, "losses": losses,
         "winrate": round(winrate, 1),
