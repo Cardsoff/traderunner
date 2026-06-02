@@ -573,12 +573,12 @@ function renderTradesTable() {
         const cls = pnl > 0 ? 'cell-pos' : (pnl < 0 ? 'cell-neg' : '');
         const sideTag = t.side==='LONG'?'<span class="tag tag-long">LONG</span>':t.side==='SHORT'?'<span class="tag tag-short">SHORT</span>':'<span class="tag tag-manual">—</span>';
         const srcTag = t.source==='bitunix'?'<span class="tag tag-bitunix">Bitunix</span>':'<span class="tag tag-manual">Manual</span>';
-        const setupTag = t.setup ? `<span class="tag tag-setup">${esc(t.setup)}</span>` : '<span class="muted">—</span>';
+        const setupTag = t.setup ? `<span class="tag tag-setup">${esc(t.setup)}</span>` : '<span class="muted setup-empty">+ tag</span>';
         return `<tr data-trade-id="${t.id}" data-trade-row="1" style="cursor:pointer;" title="Клик для графика монеты">
           <td>${fmtDateTime(t.ts)}</td>
           <td><b>${esc(t.symbol)||'—'}</b></td>
           <td>${sideTag}</td>
-          <td>${setupTag}</td>
+          <td class="trade-setup-cell" data-trade-id="${t.id}" data-current-setup="${esc(t.setup||'')}" title="Клик чтобы тегнуть сетап">${setupTag}</td>
           <td class="cell-num">${t.entry_price?(+t.entry_price).toFixed(2):'—'}</td>
           <td class="cell-num">${t.exit_price?(+t.exit_price).toFixed(2):'—'}</td>
           <td class="cell-num ${cls}">${fmtMoney(pnl,2)}</td>
@@ -3539,4 +3539,55 @@ function fireConfetti() {
   // первичная подсветка после загрузки i18n
   document.addEventListener('DOMContentLoaded', highlight);
   setTimeout(highlight, 500);
+})();
+
+// ===== Inline edit Setup (Sprint A) =====
+(function () {
+  document.addEventListener('click', async function (e) {
+    const cell = e.target.closest('.trade-setup-cell');
+    if (!cell || cell.querySelector('select')) return;
+    e.stopPropagation();  // не открывать chart modal
+    const tradeId = cell.getAttribute('data-trade-id');
+    const current = cell.getAttribute('data-current-setup') || '';
+    const setups = (window._data && window._data.setups) || [];
+    if (!setups.length) {
+      cell.innerHTML = '<span class="muted">нет сетапов · открой Сетапы tab</span>';
+      setTimeout(function(){ window.location.reload(); }, 800);
+      return;
+    }
+    const sel = document.createElement('select');
+    sel.style.cssText = 'background:var(--bg-elev);border:1px solid var(--border);color:var(--text-primary);padding:3px 6px;border-radius:4px;font-size:11px;';
+    sel.innerHTML = '<option value="">— нет —</option>' + setups.map(s => '<option value="' + s.replace(/"/g,'&quot;') + '"' + (s === current ? ' selected' : '') + '>' + s + '</option>').join('');
+    cell.innerHTML = '';
+    cell.appendChild(sel);
+    sel.focus();
+    sel.addEventListener('change', async function () {
+      const newSetup = sel.value;
+      try {
+        const r = await fetch('/api/trades/' + tradeId, {
+          method: 'PATCH',
+          headers: {'Content-Type': 'application/json'},
+          credentials: 'include',
+          body: JSON.stringify({setup: newSetup})
+        });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        cell.setAttribute('data-current-setup', newSetup);
+        cell.innerHTML = newSetup
+          ? '<span class="tag tag-setup">' + newSetup.replace(/</g,'&lt;') + '</span>'
+          : '<span class="muted setup-empty">+ tag</span>';
+      } catch (err) {
+        cell.innerHTML = '<span style="color:#ff6b7a;font-size:10px;">err</span>';
+      }
+    });
+    sel.addEventListener('blur', function () {
+      // close без save если не было change
+      setTimeout(function () {
+        if (cell.contains(sel)) {
+          cell.innerHTML = current
+            ? '<span class="tag tag-setup">' + current.replace(/</g,'&lt;') + '</span>'
+            : '<span class="muted setup-empty">+ tag</span>';
+        }
+      }, 200);
+    });
+  });
 })();

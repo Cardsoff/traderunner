@@ -1748,3 +1748,90 @@ table { border-collapse: collapse; width: 100%; }
   .kpi-label { font-size: 9.5px; }
   .mc-month-name { font-size: 12px; min-width: 90px; }
 }
+
+
+/* === MOBILE VIEWPORT FIX (Sprint A) — critical bugs ===
+ * Bug: body.scrollWidth=1397 на viewport 390 (canvas 1354, table 834, nav 471)
+ * Решение: force overflow-x на body + responsive canvas + wrap nav
+ */
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+.container, main {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+/* Chart.js canvas — заставить родителя ограничить ширину */
+.chart-container, .chart-container > canvas {
+  max-width: 100% !important;
+  width: 100% !important;
+  display: block;
+}
+/* Equity merged pane тоже */
+.equity-pane, .equity-pane > .chart-container {
+  max-width: 100% !important;
+}
+/* Trades table — нативный horizontal scroll на родителе */
+.table-wrap, .trades-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+}
+.data-table {
+  min-width: 760px;  /* фиксированная ширина — не растягивается */
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  /* Header nav: брэнд + tagline укоротить, иконки скрыть на мобиле */
+  .top-nav { padding: 8px 10px; flex-wrap: wrap; }
+  .brand-sub, .brand-tagline { display: none; }  /* slogan не нужен на mobile */
+  .nav-actions {
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  /* Status pill сжать */
+  .status-pill { font-size: 11px; padding: 4px 8px; }
+  .sync-last { display: none; }  /* «Sync 5 мин назад» уберём, оставим только кнопку */
+  /* Help button, share/edit/delete иконки — скрыть */
+  #helpBtn { display: none; }
+  /* Theme toggle — скрыть на мобиле (редко нужен) */
+  .btn-theme-toggle, [data-theme-toggle] { display: none; }
+  /* RU/EN компактнее */
+  .lang-switch button { padding: 3px 6px !important; font-size: 10px !important; }
+
+  /* Container padding меньше */
+  .container { padding: 0 8px; }
+
+  /* Bottom safe area для iPhone notch */
+  body { padding-bottom: env(safe-area-inset-bottom, 0); }
+
+  /* Чарт — фикс высоты но width: auto */
+  .chart-container { height: 180px !important; }
+  .chart-container > canvas { height: 180px !important; max-height: 180px !important; }
+
+  /* + Sделка как FAB снизу справа */
+  #addTradeBtn {
+    position: fixed;
+    right: 14px;
+    bottom: 14px;
+    z-index: 80;
+    border-radius: 50px;
+    padding: 12px 18px !important;
+    box-shadow: 0 4px 16px rgba(16,201,138,0.40);
+    font-size: 13px;
+    font-weight: 600;
+    /* Spaceport — над bottom-nav если будет */
+    margin-bottom: env(safe-area-inset-bottom, 0);
+  }
+}
+
+/* Extra small — iPhone SE 375px */
+@media (max-width: 400px) {
+  .brand { font-size: 14px; }
+  .nav-actions { gap: 4px; }
+  .status-pill { font-size: 10px; padding: 3px 6px; }
+  .container { padding: 0 6px; }
+}
