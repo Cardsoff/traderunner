@@ -3939,3 +3939,464 @@ function fireConfetti() {
   // Fallback: если loadAll не вызовется через 5 секунд — убираем skeleton
   setTimeout(removeSkel, 5000);
 })();
+
+
+// ============================================
+// B1 (2026-06-03): Mobile bottom-nav + sheet handlers
+// ============================================
+(function() {
+  function setBnActive(action) {
+    document.querySelectorAll('.bn-btn').forEach(b => b.classList.remove('bn-active'));
+    const btn = document.querySelector(`.bn-btn[data-bn-action="${action}"]`);
+    if (btn) btn.classList.add('bn-active');
+  }
+  
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('.bn-btn');
+    if (!btn) return;
+    const action = btn.dataset.bnAction;
+    if (!action) return;
+    
+    switch(action) {
+      case 'dashboard':
+        window.scrollTo({top: 0, behavior: 'smooth'});
+        setBnActive('dashboard');
+        break;
+      case 'trades': {
+        const t = document.querySelector('.tab[data-tab="trades"]');
+        if (t) t.click();
+        document.querySelector('#tradesTable')?.scrollIntoView({behavior: 'smooth', block: 'start'});
+        setBnActive('trades');
+        break;
+      }
+      case 'analytics': {
+        const t = document.querySelector('.tab[data-tab="advanced"]');
+        if (t) t.click();
+        document.querySelector('#tab-advanced')?.scrollIntoView({behavior: 'smooth', block: 'start'});
+        setBnActive('analytics');
+        break;
+      }
+      case 'add-trade': {
+        document.querySelector('#addTradeBtn')?.click();
+        break;
+      }
+      case 'profile': {
+        const sheet = document.getElementById('profileSheet');
+        if (sheet) {
+          sheet.setAttribute('aria-hidden', 'false');
+        }
+        setBnActive('profile');
+        break;
+      }
+    }
+  });
+  
+  // Bottom-sheet close (tap on overlay or handle)
+  document.addEventListener('click', e => {
+    if (e.target.closest('[data-bs-close]') || e.target.classList.contains('bs-handle')) {
+      const sheet = e.target.closest('.bottom-sheet');
+      if (sheet) sheet.setAttribute('aria-hidden', 'true');
+    }
+  });
+  
+  // Profile sheet actions
+  document.addEventListener('click', e => {
+    const item = e.target.closest('.bs-item');
+    if (!item) return;
+    const action = item.dataset.bsAction;
+    const sheet = document.getElementById('profileSheet');
+    
+    switch(action) {
+      case 'theme': document.querySelector('.theme-toggle')?.click(); break;
+      case 'lang': {
+        // Toggle между ru и en
+        const cur = (window.i18n && window.i18n.getLang) ? window.i18n.getLang() : 'ru';
+        const next = cur === 'ru' ? 'en' : 'ru';
+        if (window.i18n) window.i18n.setLang(next);
+        break;
+      }
+      case 'sync': document.querySelector('#syncBtn')?.click(); break;
+      case 'settings': {
+        // Открыть settings modal
+        document.querySelector('[data-open="settingsModal"]')?.click() ||
+          document.querySelector('#openSettingsBtn')?.click() ||
+          document.querySelector('.settings-btn')?.click();
+        break;
+      }
+    }
+    
+    // Закрыть sheet после действия (кроме logout — это link)
+    if (action !== 'logout' && sheet) {
+      setTimeout(() => sheet.setAttribute('aria-hidden', 'true'), 200);
+    }
+  });
+  
+  // Сбросить bn-active при скролле наверх (= Dashboard view)
+  window.addEventListener('scroll', () => {
+    if (window.scrollY < 100 && window.innerWidth <= 480) {
+      const cur = document.querySelector('.bn-btn.bn-active');
+      if (cur && cur.dataset.bnAction !== 'dashboard') {
+        // Не сбрасываем — пусть последняя выбранная остаётся
+      }
+    }
+  }, {passive: true});
+})();
+
+
+// ============================================
+// B2 (2026-06-03): KPI sparklines + delta vs previous period
+// ============================================
+(function() {
+  // Группирует сделки по датам YYYY-MM-DD и считает дневные метрики
+  function aggregateByDay(trades) {
+    const days = {};
+    for (const t of trades) {
+      const ts = t.ts || '';
+      const day = ts.slice(0, 10);
+      if (!day) continue;
+      if (!days[day]) days[day] = {net_pnl: 0, trades: 0, wins: 0, losses: 0, gross_profit: 0, gross_loss: 0, equity_at_close: 0};
+      const pnl = (+t.pnl_usd || 0) - (+t.fee_usd || 0);
+      days[day].net_pnl += pnl;
+      days[day].trades += 1;
+      if (pnl > 0) { days[day].wins += 1; days[day].gross_profit += pnl; }
+      else if (pnl < 0) { days[day].losses += 1; days[day].gross_loss += Math.abs(pnl); }
+    }
+    return days;
+  }
+  
+  // Делит trades на 2 половины по середине периода
+  function splitTradesByPeriod(trades, startDt, endDt) {
+    if (!trades.length) return {cur: [], prev: []};
+    const sorted = [...trades].sort((a,b) => (a.ts||'').localeCompare(b.ts||''));
+    const start = startDt ? new Date(startDt) : new Date(sorted[0].ts);
+    const end = endDt ? new Date(endDt) : new Date();
+    const ms = end - start;
+    const prevStart = new Date(start - ms);
+    const cur = sorted.filter(t => {
+      const d = new Date(t.ts);
+      return d >= start && d <= end;
+    });
+    const prev = sorted.filter(t => {
+      const d = new Date(t.ts);
+      return d >= prevStart && d < start;
+    });
+    return {cur, prev};
+  }
+  
+  function calcKpis(trades) {
+    let np = 0, wins = 0, losses = 0, gp = 0, gl = 0;
+    let cumPnl = 0, peak = 0, mdd = 0;
+    for (const t of trades) {
+      const pnl = (+t.pnl_usd || 0) - (+t.fee_usd || 0);
+      np += pnl;
+      if (pnl > 0) { wins++; gp += pnl; }
+      else if (pnl < 0) { losses++; gl += Math.abs(pnl); }
+      cumPnl += pnl;
+      if (cumPnl > peak) peak = cumPnl;
+      const dd = peak > 0 ? (peak - cumPnl) / peak * 100 : 0;
+      if (dd > mdd) mdd = dd;
+    }
+    const total = wins + losses;
+    return {
+      net_pnl: np,
+      trades: trades.length,
+      winrate: total ? (wins / total * 100) : 0,
+      pf: gl > 0 ? (gp / gl) : (gp > 0 ? 999 : 0),
+      dd: mdd,
+    };
+  }
+  
+  function sparkPoints(values, width, height) {
+    if (values.length < 2) return null;
+    const min = Math.min(...values, 0);
+    const max = Math.max(...values, 0);
+    const range = (max - min) || 1;
+    const dx = width / (values.length - 1);
+    return values.map((v, i) => ({
+      x: i * dx,
+      y: height - ((v - min) / range) * height,
+    }));
+  }
+  
+  function renderSpark(svg, values, color) {
+    if (!svg) return;
+    svg.innerHTML = '';
+    const pts = sparkPoints(values, 60, 20);
+    if (!pts) return;
+    const path = pts.map((p, i) => (i === 0 ? `M${p.x},${p.y}` : `L${p.x},${p.y}`)).join(' ');
+    const fill = `${path} L60,20 L0,20 Z`;
+    svg.insertAdjacentHTML('beforeend', `<path class="spark-fill" fill="${color}" d="${fill}"></path>`);
+    svg.insertAdjacentHTML('beforeend', `<path stroke="${color}" d="${path}"></path>`);
+  }
+  
+  function fmtDelta(cur, prev, suffix='%') {
+    if (prev === 0) return cur === 0 ? {text:'·', cls:'delta-flat'} : {text:'new', cls:'delta-up'};
+    const d = (cur - prev) / Math.abs(prev) * 100;
+    const cls = Math.abs(d) < 1 ? 'delta-flat' : (d > 0 ? 'delta-up' : 'delta-down');
+    const sign = d > 0 ? '+' : '';
+    return {text: `${sign}${d.toFixed(0)}${suffix}`, cls};
+  }
+  
+  window.renderKpiSparklines = async function() {
+    try {
+      const r = await fetch('/api/trades', {credentials: 'include'});
+      const data = await r.json();
+      const trades = Array.isArray(data) ? data : (data.items || []);
+      if (!trades.length) return;
+      
+      // Получим scope текущего периода (из активной цели или общий)
+      // Используем простой подход: берём все trades + делим пополам по времени
+      const sorted = [...trades].sort((a,b) => (a.ts||'').localeCompare(b.ts||''));
+      const half = Math.floor(sorted.length / 2);
+      const prevTrades = sorted.slice(0, half);
+      const curTrades = sorted.slice(half);
+      
+      const cur = calcKpis(curTrades);
+      const prev = calcKpis(prevTrades);
+      
+      // Sparkline data — дневной net_pnl за последние 30 дней
+      const days = aggregateByDay(trades);
+      const sortedDays = Object.keys(days).sort();
+      const last30 = sortedDays.slice(-30);
+      
+      // Net P&L sparkline (cumulative)
+      let cumNp = 0;
+      const npSeries = last30.map(d => { cumNp += days[d].net_pnl; return cumNp; });
+      renderSpark(document.querySelector('[data-kpi-spark="net_pnl"]'), npSeries, cur.net_pnl >= 0 ? '#4cc28d' : '#ff6b7a');
+      
+      // Trades count
+      const trSeries = last30.map(d => days[d].trades);
+      renderSpark(document.querySelector('[data-kpi-spark="trades"]'), trSeries, '#5a9be0');
+      
+      // Winrate rolling
+      const wrSeries = last30.map(d => {
+        const wr = days[d].wins + days[d].losses;
+        return wr ? days[d].wins / wr * 100 : 0;
+      });
+      renderSpark(document.querySelector('[data-kpi-spark="winrate"]'), wrSeries, cur.winrate >= 50 ? '#4cc28d' : '#f5a524');
+      
+      // Profit factor rolling (gross_profit / gross_loss)
+      const pfSeries = last30.map(d => days[d].gross_loss > 0 ? days[d].gross_profit / days[d].gross_loss : (days[d].gross_profit > 0 ? 2 : 0));
+      renderSpark(document.querySelector('[data-kpi-spark="pf"]'), pfSeries, cur.pf >= 1.5 ? '#4cc28d' : '#f5a524');
+      
+      // DD (cumulative)
+      let cumP = 0, p = 0, ddSeries = [];
+      for (const d of last30) {
+        cumP += days[d].net_pnl;
+        if (cumP > p) p = cumP;
+        const dd = p > 0 ? (p - cumP) / p * 100 : 0;
+        ddSeries.push(dd);
+      }
+      renderSpark(document.querySelector('[data-kpi-spark="dd"]'), ddSeries, '#ff6b7a');
+      
+      // Deltas
+      function setDelta(key, cur, prev, suf='%') {
+        const el = document.querySelector(`[data-kpi-delta="${key}"]`);
+        if (!el) return;
+        const d = fmtDelta(cur, prev, suf);
+        el.textContent = d.text;
+        el.className = 'kpi-delta ' + d.cls;
+      }
+      setDelta('net_pnl', cur.net_pnl, prev.net_pnl);
+      setDelta('trades', cur.trades, prev.trades);
+      setDelta('winrate', cur.winrate, prev.winrate, 'pp');  // percent points
+      setDelta('pf', cur.pf, prev.pf);
+      setDelta('dd', cur.dd, prev.dd, 'pp');
+      
+    } catch (e) {
+      console.warn('renderKpiSparklines failed:', e);
+    }
+  };
+  
+  // Запускать после loadAll
+  const origLoadAll = window.loadAll;
+  if (typeof origLoadAll === 'function') {
+    window.loadAll = async function(...args) {
+      const r = await origLoadAll.apply(this, args);
+      try { await window.renderKpiSparklines(); } catch(e) {}
+      return r;
+    };
+  } else {
+    // fallback — запустим через 1.5s после DOMContentLoaded
+    setTimeout(() => window.renderKpiSparklines(), 1500);
+  }
+})();
+
+
+// ============================================
+// B4 (2026-06-03): Command palette Cmd+K
+// ============================================
+(function() {
+  const COMMANDS = [
+    {id: 'add-trade', icon: '➕', label: 'Добавить сделку', section: 'Действия', kbd: 'N', run: () => document.querySelector('#addTradeBtn')?.click()},
+    {id: 'sync', icon: '🔄', label: 'Синхронизировать Bitunix', section: 'Действия', kbd: 'S', run: () => document.querySelector('#syncBtn')?.click()},
+    {id: 'add-deposit', icon: '💵', label: 'Добавить депозит', section: 'Действия', run: () => document.querySelector('#addDepositBtn')?.click()},
+    
+    {id: 'tab-trades', icon: '📓', label: 'Перейти к Сделкам', section: 'Навигация', run: () => document.querySelector('.tab[data-tab="trades"]')?.click()},
+    {id: 'tab-deposits', icon: '💵', label: 'Перейти к Депозитам', section: 'Навигация', run: () => document.querySelector('.tab[data-tab="deposits"]')?.click()},
+    {id: 'tab-planfact', icon: '📊', label: 'Перейти к План vs Факт', section: 'Навигация', run: () => document.querySelector('.tab[data-tab="planfact"]')?.click()},
+    {id: 'tab-setups', icon: '🎯', label: 'Перейти к Сетапам', section: 'Навигация', run: () => document.querySelector('.tab[data-tab="setups"]')?.click()},
+    {id: 'tab-advanced', icon: '📈', label: 'Перейти к Аналитике', section: 'Навигация', run: () => document.querySelector('.tab[data-tab="advanced"]')?.click()},
+    {id: 'tab-archive', icon: '🏆', label: 'Перейти к Истории целей', section: 'Навигация', run: () => document.querySelector('.tab[data-tab="archive"]')?.click()},
+    {id: 'top', icon: '⬆️', label: 'Наверх (Dashboard)', section: 'Навигация', run: () => window.scrollTo({top:0, behavior:'smooth'})},
+    
+    {id: 'theme', icon: '🌙', label: 'Переключить тему', section: 'Настройки', run: () => document.querySelector('.theme-toggle, [data-action="toggle-theme"]')?.click()},
+    {id: 'lang-ru', icon: '🇷🇺', label: 'Сменить язык: Русский', section: 'Настройки', run: () => window.i18n?.setLang('ru')},
+    {id: 'lang-en', icon: '🇬🇧', label: 'Сменить язык: English', section: 'Настройки', run: () => window.i18n?.setLang('en')},
+    {id: 'logout', icon: '🚪', label: 'Выйти из аккаунта', section: 'Настройки', run: () => location.href = '/auth/logout'},
+    
+    {id: 'export-csv', icon: '📄', label: 'Экспорт CSV', section: 'Данные', run: () => location.href = '/api/trades/export.csv'},
+    {id: 'export-pdf', icon: '📑', label: 'Экспорт PDF', section: 'Данные', run: () => document.querySelector('[href*="export.pdf"], #exportPdfBtn')?.click()},
+  ];
+  
+  let _trades = [];  // Кеш сделок для поиска
+  let _activeIdx = 0;
+  let _filtered = [];
+  
+  function fuzzyMatch(query, text) {
+    if (!query) return true;
+    query = query.toLowerCase();
+    text = text.toLowerCase();
+    if (text.includes(query)) return true;
+    // Простой fuzzy: все символы query встречаются в text по порядку
+    let qi = 0;
+    for (let i = 0; i < text.length && qi < query.length; i++) {
+      if (text[i] === query[qi]) qi++;
+    }
+    return qi === query.length;
+  }
+  
+  function render(query) {
+    const list = document.getElementById('cmdkList');
+    if (!list) return;
+    _filtered = [];
+    
+    // Команды
+    const cmds = COMMANDS.filter(c => fuzzyMatch(query, c.label));
+    _filtered = cmds.slice();
+    
+    // Trade-поиск (по тикеру / заметке) — только если есть запрос длиннее 1
+    let tradeMatches = [];
+    if (query && query.length >= 2) {
+      tradeMatches = _trades.filter(t => 
+        fuzzyMatch(query, t.symbol || '') || fuzzyMatch(query, t.note || '')
+      ).slice(0, 5).map(t => ({
+        id: 'trade-' + t.id,
+        icon: t.side === 'LONG' ? '📈' : '📉',
+        label: `${t.symbol} · ${t.side} · ${(+t.pnl_usd).toFixed(2)}$`,
+        sub: t.ts ? t.ts.slice(0, 16).replace('T', ' ') : '',
+        section: 'Сделки',
+        run: () => {
+          const row = document.querySelector(`tr[data-trade-id="${t.id}"]`);
+          if (row) {
+            row.scrollIntoView({behavior: 'smooth', block: 'center'});
+            row.style.transition = 'background 0.6s';
+            row.style.background = 'rgba(58,169,122,0.2)';
+            setTimeout(() => row.style.background = '', 1500);
+          }
+        }
+      }));
+      _filtered = _filtered.concat(tradeMatches);
+    }
+    
+    if (!_filtered.length) {
+      list.innerHTML = '<div class="cmdk-empty">Ничего не найдено</div>';
+      return;
+    }
+    
+    // Группируем по section
+    const sections = {};
+    _filtered.forEach((c, i) => {
+      const sec = c.section || 'Другое';
+      if (!sections[sec]) sections[sec] = [];
+      sections[sec].push({c, i});
+    });
+    
+    let html = '';
+    for (const [sec, items] of Object.entries(sections)) {
+      html += `<div class="cmdk-section">${sec}</div>`;
+      for (const {c, i} of items) {
+        const kbd = c.kbd ? `<span class="cmdk-item-kbd">${c.kbd}</span>` : '';
+        const sub = c.sub ? `<small>${c.sub}</small>` : '';
+        html += `<div class="cmdk-item${i === _activeIdx ? ' cmdk-active' : ''}" data-cmdk-idx="${i}"><span class="cmdk-item-ico">${c.icon}</span><div class="cmdk-item-text">${c.label}${sub}</div>${kbd}</div>`;
+      }
+    }
+    list.innerHTML = html;
+    
+    // Scroll active в виду
+    const active = list.querySelector('.cmdk-active');
+    if (active) active.scrollIntoView({block: 'nearest'});
+  }
+  
+  function open() {
+    const ov = document.getElementById('cmdkOverlay');
+    if (!ov) return;
+    ov.setAttribute('aria-hidden', 'false');
+    _activeIdx = 0;
+    
+    // Подтянуть свежие сделки
+    fetch('/api/trades?limit=500', {credentials: 'include'})
+      .then(r => r.json())
+      .then(data => {
+        _trades = Array.isArray(data) ? data : (data.items || []);
+      })
+      .catch(() => {});
+    
+    const inp = document.getElementById('cmdkInput');
+    if (inp) {
+      inp.value = '';
+      render('');
+      setTimeout(() => inp.focus(), 50);
+    }
+  }
+  
+  function close() {
+    const ov = document.getElementById('cmdkOverlay');
+    if (ov) ov.setAttribute('aria-hidden', 'true');
+  }
+  
+  function exec(idx) {
+    const c = _filtered[idx];
+    if (!c) return;
+    close();
+    setTimeout(() => c.run(), 50);
+  }
+  
+  // Global shortcuts
+  document.addEventListener('keydown', e => {
+    // Cmd+K / Ctrl+K
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      open();
+      return;
+    }
+    // Не обрабатывать другие клавиши если палитра закрыта
+    const ov = document.getElementById('cmdkOverlay');
+    if (!ov || ov.getAttribute('aria-hidden') === 'true') return;
+    
+    if (e.key === 'Escape') { e.preventDefault(); close(); }
+    if (e.key === 'ArrowDown') { e.preventDefault(); _activeIdx = Math.min(_filtered.length - 1, _activeIdx + 1); render(document.getElementById('cmdkInput').value); }
+    if (e.key === 'ArrowUp') { e.preventDefault(); _activeIdx = Math.max(0, _activeIdx - 1); render(document.getElementById('cmdkInput').value); }
+    if (e.key === 'Enter') { e.preventDefault(); exec(_activeIdx); }
+  });
+  
+  // Input search
+  document.addEventListener('input', e => {
+    if (e.target.id === 'cmdkInput') {
+      _activeIdx = 0;
+      render(e.target.value);
+    }
+  });
+  
+  // Click on item
+  document.addEventListener('click', e => {
+    const item = e.target.closest('.cmdk-item');
+    if (item) {
+      const idx = parseInt(item.dataset.cmdkIdx);
+      exec(idx);
+      return;
+    }
+    // Click on overlay (но не на modal) — закрыть
+    if (e.target.id === 'cmdkOverlay') close();
+  });
+})();

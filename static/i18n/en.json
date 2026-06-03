@@ -479,5 +479,14 @@
     "r_multiple": "R-multiple|(exit − entry) / |entry − SL||Win in risk units. +1R = win equals risk taken. Green ≥+1R, red <0. To see a value — set Stop-Loss by clicking the «—».",
     "tiltmeter": "Tiltmeter|0..100, aggregate|Risk indicator: revenge trades, size-up after loss, losing streak. >70 — pause recommended.",
     "goal_progress": "Goal progress|capital / target × 100%|Percent of target reached. Checkpoints at 25/50/75% mark milestones."
+  },
+  "bnav": {
+    "home": "Home",
+    "trades": "Trades",
+    "add": "+ Trade",
+    "analytics": "Analytics",
+    "profile": "Profile",
+    "theme": "Theme",
+    "lang": "Language"
   }
 }

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TradeRunner — Crypto trading journal с zero-knowledge приватностью</title>
+<meta name="description" content="Журнал крипто-трейдов с автосинхом Bitunix, R-multiple аналитикой, tiltmeter и шифрованием API-ключей. Бесплатно для бета-юзеров." />
+<meta property="og:title" content="TradeRunner — Crypto Trading Journal" />
+<meta property="og:description" content="Crypto-first trading journal. Bitunix sync, R-multiple, zero-knowledge encryption of exchange keys." />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="https://web-production-dbdcd.up.railway.app/static/og-image.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+<script src="/static/i18n.js" defer></script>
+<style>
+  :root {
+    --bg: #0a0e14;
+    --bg-card: #11161f;
+    --bg-elev: #1a212d;
+    --border: #1f2837;
+    --text: #e5edf5;
+    --text-sec: #b5c0d0;
+    --text-muted: #8a96a8;
+    --accent: #3aa97a;
+    --accent-h: #4cc28d;
+    --positive: #4cc28d;
+    --negative: #ff6b7a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+  
+  /* Header */
+  header.lp-nav {
+    padding: 18px 0;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0;
+    background: rgba(10, 14, 20, 0.9);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+  .lp-nav-inner { display: flex; align-items: center; justify-content: space-between; }
+  .lp-brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; color: var(--text); text-decoration: none; }
+  .lp-brand-logo {
+    width: 32px; height: 32px;
+    background: var(--accent); border-radius: 8px;
+    display: grid; place-items: center; color: #fff;
+  }
+  .lp-nav-actions { display: flex; gap: 8px; align-items: center; }
+  .lp-nav-actions a { color: var(--text-sec); text-decoration: none; font-size: 14px; padding: 8px 14px; border-radius: 6px; transition: all 0.15s; }
+  .lp-nav-actions a:hover { color: var(--text); background: var(--bg-elev); }
+  .lp-nav-actions .btn-cta { background: var(--accent); color: #fff; font-weight: 600; }
+  .lp-nav-actions .btn-cta:hover { background: var(--accent-h); }
+  .btn-lang { background: none; border: 0; color: var(--text-sec); cursor: pointer; padding: 8px; font-size: 12px; opacity: 0.6; }
+  .btn-lang.active { opacity: 1; color: var(--accent); font-weight: 600; }
+  
+  /* Hero */
+  .hero { padding: 80px 0 60px; text-align: center; }
+  .hero-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    background: rgba(58, 169, 122, 0.12);
+    border: 1px solid rgba(58, 169, 122, 0.25);
+    border-radius: 100px;
+    font-size: 12px;
+    color: var(--positive);
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(34px, 6vw, 56px);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 18px;
+    letter-spacing: -0.5px;
+  }
+  .hero h1 .grad {
+    background: linear-gradient(135deg, var(--positive) 0%, #5a9be0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-sub {
+    font-size: clamp(15px, 2vw, 18px);
+    color: var(--text-sec);
+    max-width: 640px;
+    margin: 0 auto 36px;
+  }
+  .hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .btn-primary, .btn-secondary {
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.15s;
+    display: inline-block;
+    cursor: pointer;
+    border: 0;
+    font-family: inherit;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-h); transform: translateY(-1px); }
+  .btn-secondary { background: var(--bg-elev); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--text-sec); }
+  .hero-meta { color: var(--text-muted); font-size: 13px; }
+  
+  /* Hero screenshot */
+  .hero-screenshot {
+    margin-top: 50px;
+    max-width: 100%;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .hero-mock {
+    background: linear-gradient(135deg, #0d1219 0%, #11161f 100%);
+    padding: 30px;
+    text-align: left;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+  .hero-mock .row { display: flex; justify-content: space-between; margin-bottom: 16px; padding: 12px 16px; background: rgba(255,255,255,0.03); border-radius: 8px; }
+  .hero-mock .lbl { color: var(--text-sec); }
+  .hero-mock .val { font-weight: 600; }
+  .hero-mock .pos { color: var(--positive); }
+  .hero-mock .neg { color: var(--negative); }
+  
+  /* Section */
+  section.lp-sec { padding: 80px 0; }
+  section.lp-sec.alt { background: var(--bg-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .sec-head { text-align: center; margin-bottom: 50px; }
+  .sec-head h2 { font-size: clamp(28px, 4vw, 38px); font-weight: 700; margin-bottom: 12px; }
+  .sec-head p { color: var(--text-sec); font-size: 16px; max-width: 580px; margin: 0 auto; }
+  
+  /* Features grid */
+  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+  .feature {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    transition: all 0.2s;
+  }
+  .feature:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .feature-ico { font-size: 32px; margin-bottom: 14px; display: block; }
+  .feature h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+  .feature p { color: var(--text-sec); font-size: 14px; }
+  
+  /* Pricing */
+  .pricing { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; max-width: 800px; margin: 0 auto; }
+  .price-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px 32px;
+    position: relative;
+  }
+  .price-card.featured {
+    border-color: var(--accent);
+    box-shadow: 0 0 40px rgba(58,169,122,0.15);
+  }
+  .price-card.featured::before {
+    content: 'Бета · Бесплатно';
+    position: absolute;
+    top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--accent); color: #fff;
+    padding: 4px 14px; border-radius: 100px;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
+  }
+  .price-card h3 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .price-card .price { font-size: 42px; font-weight: 800; margin: 14px 0; }
+  .price-card .price small { font-size: 16px; color: var(--text-muted); font-weight: 400; }
+  .price-card .features-list { list-style: none; margin: 24px 0; }
+  .price-card .features-list li { padding: 6px 0; padding-left: 24px; position: relative; font-size: 14px; }
+  .price-card .features-list li::before {
+    content: '✓'; position: absolute; left: 0; color: var(--accent); font-weight: 700;
+  }
+  
+  /* FAQ */
+  .faq-list { max-width: 720px; margin: 0 auto; }
+  .faq-item {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 0;
+  }
+  .faq-item summary {
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+    padding-right: 24px;
+    position: relative;
+  }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary::after {
+    content: '+';
+    position: absolute; right: 0; top: 0;
+    font-size: 24px; color: var(--text-muted);
+    transition: transform 0.2s;
+  }
+  .faq-item[open] summary::after { transform: rotate(45deg); }
+  .faq-item p { margin-top: 12px; color: var(--text-sec); font-size: 14px; line-height: 1.6; }
+  
+  /* Footer */
+  footer.lp-footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 0 30px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+  footer.lp-footer a { color: var(--text-sec); text-decoration: none; margin: 0 12px; }
+  footer.lp-footer a:hover { color: var(--text); }
+  
+  @media (max-width: 768px) {
+    .container { padding: 0 16px; }
+    .hero { padding: 50px 0 40px; }
+    section.lp-sec { padding: 50px 0; }
+    .lp-nav-actions a:not(.btn-cta) { display: none; }
+    .lp-nav-actions .btn-cta { padding: 8px 14px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="lp-nav">
+  <div class="container lp-nav-inner">
+    <a href="/" class="lp-brand">
+      <span class="lp-brand-logo">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+      </span>
+      TradeRunner
+    </a>
+    <nav class="lp-nav-actions">
+      <a href="#features" data-i18n="lp.nav.features">Возможности</a>
+      <a href="#pricing" data-i18n="lp.nav.pricing">Тарифы</a>
+      <a href="#faq">FAQ</a>
+      <button type="button" class="btn-lang" data-lang="ru">RU</button>
+      <button type="button" class="btn-lang" data-lang="en">EN</button>
+      <a href="/auth/login" data-i18n="lp.nav.login">Войти</a>
+      <a href="/auth/register" class="btn-cta" data-i18n="lp.nav.signup">Начать бесплатно</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge" data-i18n="lp.hero.badge">🔒 Zero-knowledge · Bitunix native · Бета 2026</div>
+    <h1 data-i18n-html="lp.hero.title">
+      Журнал крипто-трейдов <br/>с приватностью на <span class="grad">биржевом уровне</span>
+    </h1>
+    <p class="hero-sub" data-i18n="lp.hero.sub">
+      Auto-sync с Bitunix. R-multiple, tiltmeter, heatmap. Твои API-ключи шифруются паролем — мы их физически не видим.
+    </p>
+    <div class="hero-cta">
+      <a href="/auth/register" class="btn-primary" data-i18n="lp.hero.cta_main">Создать аккаунт →</a>
+      <a href="#features" class="btn-secondary" data-i18n="lp.hero.cta_secondary">Посмотреть как работает</a>
+    </div>
+    <div class="hero-meta" data-i18n="lp.hero.meta">Без карты · Без триала · Email подтверждение</div>
+    
+    <div class="hero-screenshot">
+      <div class="hero-mock">
+        <div class="row"><span class="lbl">Net P&L (30d)</span> <span class="val pos">+$2,847.50 ↑42%</span></div>
+        <div class="row"><span class="lbl">Winrate</span> <span class="val">58% (84/144)</span></div>
+        <div class="row"><span class="lbl">Profit Factor</span> <span class="val pos">2.1</span></div>
+        <div class="row"><span class="lbl">Max Drawdown</span> <span class="val neg">−12.4%</span></div>
+        <div class="row"><span class="lbl">Best window (Heatmap)</span> <span class="val">Sun 16:00 · +$391</span></div>
+        <div class="row"><span class="lbl">Worst window</span> <span class="val neg">Tue 07:00 · −$1,256</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="lp-sec alt" id="features">
+  <div class="container">
+    <div class="sec-head">
+      <h2 data-i18n="lp.features.title">Всё что нужно крипто-трейдеру</h2>
+      <p data-i18n="lp.features.sub">Без воды, без подписки. Только инструменты которые меняют поведение.</p>
+    </div>
+    <div class="features">
+      <div class="feature">
+        <span class="feature-ico">🔄</span>
+        <h3 data-i18n="lp.f.sync.title">Auto-sync с Bitunix</h3>
+        <p data-i18n="lp.f.sync.text">Подключаешь API-ключи (read-only) — все сделки появляются автоматически. Не нужно CSV-импорт.</p>
+      </div>
+      <div class="feature">
+        <span class="feature-ico">🔒</span>
+        <h3 data-i18n="lp.f.crypto.title">Zero-knowledge шифрование</h3>
+        <p data-i18n="lp.f.crypto.text">Ключи биржи шифруются паролем через Argon2id + Fernet. Мы их не можем расшифровать даже теоретически.</p>
+      </div>
+      <div class="feature">
+        <span class="feature-ico">📊</span>
+        <h3 data-i18n="lp.f.r.title">R-multiple на каждой сделке</h3>
+        <p data-i18n="lp.f.r.text">Задал Stop-Loss — видишь точно сколько R заработал. Не доллары — единицы риска. Это меняет игру.</p>
+      </div>
+      <div class="feature">
+        <span class="feature-ico">🌡️</span>
+        <h3 data-i18n="lp.f.tilt.title">Tiltmeter</h3>
+        <p data-i18n="lp.f.tilt.text">Реальное число: revenge-сделки, увеличение сайза после убытка, серия потерь. Покажет когда надо остановиться.</p>
+      </div>
+      <div class="feature">
+        <span class="feature-ico">🔥</span>
+        <h3 data-i18n="lp.f.heatmap.title">Heatmap час × день</h3>
+        <p data-i18n="lp.f.heatmap.text">7×24 сетка показывает где ты реально зарабатываешь и где сливаешь. Часто ответ удивляет.</p>
+      </div>
+      <div class="feature">
+        <span class="feature-ico">🎯</span>
+        <h3 data-i18n="lp.f.goal.title">Цели с прогнозом</h3>
+        <p data-i18n="lp.f.goal.text">Поставил target (например +100% за 3 мес) — TradeRunner посчитает реальную дату достижения по твоему текущему темпу.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="lp-sec" id="pricing">
+  <div class="container">
+    <div class="sec-head">
+      <h2 data-i18n="lp.pricing.title">Простые тарифы</h2>
+      <p data-i18n="lp.pricing.sub">Сейчас всё бесплатно — мы в бете. Pro появится после публичного запуска.</p>
+    </div>
+    <div class="pricing">
+      <div class="price-card featured">
+        <h3>Beta Free</h3>
+        <div class="price">$0<small>/мес</small></div>
+        <p style="color: var(--text-sec); font-size: 14px;" data-i18n="lp.price.free.sub">Полный функционал. Без ограничений.</p>
+        <ul class="features-list">
+          <li data-i18n="lp.price.free.f1">Auto-sync Bitunix · unlimited сделок</li>
+          <li data-i18n="lp.price.free.f2">R-multiple, Tiltmeter, Heatmap</li>
+          <li data-i18n="lp.price.free.f3">Zero-knowledge шифрование</li>
+          <li data-i18n="lp.price.free.f4">RU/EN, тёмная/светлая темы</li>
+          <li data-i18n="lp.price.free.f5">PDF/CSV экспорт</li>
+          <li data-i18n="lp.price.free.f6">Email-подтверждение</li>
+        </ul>
+        <a href="/auth/register" class="btn-primary" style="display:block;text-align:center;" data-i18n="lp.price.free.cta">Создать аккаунт →</a>
+      </div>
+      <div class="price-card">
+        <h3>Pro <span style="color:var(--text-muted);font-size:14px;font-weight:400;">(скоро)</span></h3>
+        <div class="price">$15<small>/мес</small></div>
+        <p style="color: var(--text-sec); font-size: 14px;" data-i18n="lp.price.pro.sub">Для активных трейдеров с несколькими биржами.</p>
+        <ul class="features-list">
+          <li data-i18n="lp.price.pro.f1">Всё из Beta Free</li>
+          <li data-i18n="lp.price.pro.f2">Bybit / Binance / OKX auto-sync</li>
+          <li data-i18n="lp.price.pro.f3">Telegram-алерты (DD&gt;10%, revenge)</li>
+          <li data-i18n="lp.price.pro.f4">Risk-of-ruin live калькулятор</li>
+          <li data-i18n="lp.price.pro.f5">Trade replay (по секундам)</li>
+          <li data-i18n="lp.price.pro.f6">Image upload (скриншоты ТА)</li>
+        </ul>
+        <button class="btn-secondary" style="display:block;width:100%;text-align:center;" disabled data-i18n="lp.price.pro.cta">В разработке</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="lp-sec alt" id="faq">
+  <div class="container">
+    <div class="sec-head">
+      <h2 data-i18n="lp.faq.title">Частые вопросы</h2>
+    </div>
+    <div class="faq-list">
+      <details class="faq-item">
+        <summary data-i18n="lp.faq.q1">Что значит «zero-knowledge»?</summary>
+        <p data-i18n="lp.faq.a1">API-ключи биржи шифруются у тебя в браузере ключом, который выводится из твоего пароля (Argon2id). На сервер уходит уже зашифрованная версия. Мы физически не можем их расшифровать — даже если захотим. Если ты потеряешь пароль, ключи придётся перевводить.</p>
+      </details>
+      <details class="faq-item">
+        <summary data-i18n="lp.faq.q2">Какие биржи поддерживаются?</summary>
+        <p data-i18n="lp.faq.a2">Сейчас полноценный auto-sync только для Bitunix. Bybit, Binance, OKX — в разработке (Q3 2026). До этого — ручной ввод сделок или CSV-импорт.</p>
+      </details>
+      <details class="faq-item">
+        <summary data-i18n="lp.faq.q3">Нужны ли мои Withdraw-права для API?</summary>
+        <p data-i18n="lp.faq.a3">Нет, и не давай! Нужны только Read (история сделок) и Sending (если планируешь использовать копи-трейдинг). Withdraw НЕ нужен и никогда не должен быть включён в API-ключах для журнала.</p>
+      </details>
+      <details class="faq-item">
+        <summary data-i18n="lp.faq.q4">Что с GDPR / данные?</summary>
+        <p data-i18n="lp.faq.a4">Данные хранятся в EU (Railway europe-west4). Email используется только для верификации и reset пароля. Никаких маркетинговых рассылок. Удалить аккаунт — в Настройках. Подробнее в Privacy Policy.</p>
+      </details>
+      <details class="faq-item">
+        <summary data-i18n="lp.faq.q5">Когда выйдет мобильное приложение?</summary>
+        <p data-i18n="lp.faq.a5">Web-версия полностью адаптирована под мобильные браузеры — bottom-nav, cards mode для сделок. PWA (можно установить на главный экран) уже работает. Нативное приложение — после P0 launch checklist.</p>
+      </details>
+      <details class="faq-item">
+        <summary data-i18n="lp.faq.q6">Как сообщить о баге или предложить фичу?</summary>
+        <p data-i18n="lp.faq.a6">Telegram-комьюнити TradeRunner Beta (приглашение придёт после регистрации). Или GitHub Issues: github.com/Cardsoff/traderunner. Security-баги — на security@traderunner.app (см. /.well-known/security.txt).</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<footer class="lp-footer">
+  <div class="container">
+    <div style="margin-bottom: 14px;">
+      <a href="/auth/login">Войти</a> ·
+      <a href="/auth/register">Регистрация</a> ·
+      <a href="https://github.com/Cardsoff/traderunner" target="_blank" rel="noopener">GitHub</a> ·
+      <a href="/.well-known/security.txt">Security</a>
+    </div>
+    <div>© 2026 TradeRunner · Беги к своей цели. Считай каждый трейд.</div>
+  </div>
+</footer>
+
+<script>
+(function() {
+  function setLang(lang) {
+    if (window.i18n && window.i18n.setLang) {
+      window.i18n.setLang(lang).then(highlightLang);
+    }
+  }
+  function highlightLang() {
+    const cur = (window.i18n && window.i18n.getLang) ? window.i18n.getLang() : 'ru';
+    document.querySelectorAll('.btn-lang').forEach(b => {
+      b.classList.toggle('active', b.dataset.lang === cur);
+    });
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('.btn-lang');
+    if (b) setLang(b.dataset.lang);
+  });
+  document.addEventListener('i18n:changed', highlightLang);
+  setTimeout(highlightLang, 500);
+})();
+</script>
+</body>
+</html>

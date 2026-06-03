@@ -2044,3 +2044,408 @@ tr[data-trade-row="1"].kbd-focus {
   margin-top: 6px;
   display: block;
 }
+
+
+/* ============================================
+   B1 (2026-06-03): Mobile bottom-nav + cards mode
+   ============================================ */
+
+/* Bottom-nav скрыт на desktop */
+.bottom-nav { display: none; }
+.bottom-sheet { display: none; }
+
+@media (max-width: 480px) {
+  /* Bottom navigation */
+  .bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 64px;
+    background: var(--bg-card, #11161f);
+    border-top: 1px solid var(--border, #1f2837);
+    z-index: 999;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .bn-btn {
+    background: none;
+    border: 0;
+    color: var(--text-muted, #5a6478);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 0;
+    cursor: pointer;
+    transition: color 0.15s ease;
+    min-height: 44px;
+    text-decoration: none;
+    font-family: inherit;
+  }
+  .bn-btn:active { transform: scale(0.92); }
+  .bn-btn.bn-active {
+    color: var(--accent, #3aa97a);
+  }
+  .bn-btn.bn-active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 30%;
+    right: 30%;
+    height: 2px;
+    background: var(--accent, #3aa97a);
+    border-radius: 0 0 2px 2px;
+  }
+  .bn-btn { position: relative; }
+  .bn-label {
+    font-size: 10px;
+    line-height: 1.2;
+    font-weight: 500;
+  }
+  /* Кнопка + Сделка в центре больше */
+  .bn-btn[data-bn-action="add-trade"] {
+    color: var(--accent, #3aa97a);
+  }
+  .bn-btn[data-bn-action="add-trade"] svg {
+    width: 30px; height: 30px;
+  }
+  .bn-btn[data-bn-action="add-trade"]::before { display: none; }
+  
+  /* Контент с отступом снизу под nav */
+  body { padding-bottom: 70px; }
+  
+  /* Скрыть FAB и desktop-only элементы */
+  .fab-add-trade, .fab { display: none !important; }
+  
+  /* Bottom-sheet (profile) */
+  .bottom-sheet {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 9000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+  .bottom-sheet[aria-hidden="false"] {
+    pointer-events: auto;
+    opacity: 1;
+  }
+  .bs-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+  }
+  .bs-content {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: var(--bg-card, #11161f);
+    border-radius: 16px 16px 0 0;
+    padding: 8px 20px calc(20px + env(safe-area-inset-bottom));
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .bottom-sheet[aria-hidden="false"] .bs-content {
+    transform: translateY(0);
+  }
+  .bs-handle {
+    width: 36px; height: 4px;
+    background: var(--text-muted, #5a6478);
+    border-radius: 2px;
+    margin: 8px auto 12px;
+    opacity: 0.5;
+  }
+  .bs-title {
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--text-primary, #e5edf5);
+  }
+  .bs-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .bs-item {
+    background: var(--bg, #0a0e14);
+    border: 1px solid var(--border, #1f2837);
+    border-radius: 12px;
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-primary, #e5edf5);
+    cursor: pointer;
+    transition: background 0.15s;
+    font-size: 13px;
+    text-decoration: none;
+    font-family: inherit;
+    min-height: 80px;
+    justify-content: center;
+  }
+  .bs-item:active { background: var(--bg-elev, #1a212d); }
+  .bs-item span:first-child { font-size: 24px; line-height: 1; }
+  
+  /* ====== Cards mode для таблицы сделок ====== */
+  /* Скрываем header таблицы */
+  #tradesTable thead { display: none; }
+  /* Таблица → блочный контейнер */
+  #tradesTable, #tradesTable tbody { display: block; width: 100%; }
+  /* Каждая <tr> = карточка */
+  #tradesTable tbody tr {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      "side  pair    pnl"
+      "side  date    pct"
+      "setup setup   r"
+      "note  note    actions";
+    gap: 4px 10px;
+    padding: 12px;
+    margin-bottom: 8px;
+    background: var(--bg-card, #11161f);
+    border: 1px solid var(--border, #1f2837);
+    border-radius: 10px;
+  }
+  #tradesTable tbody tr:hover { background: var(--bg-card, #11161f); }
+  /* Все <td> блочные */
+  #tradesTable tbody td {
+    display: block;
+    padding: 0;
+    border: 0;
+    text-align: left;
+    line-height: 1.3;
+  }
+  /* Дата */
+  #tradesTable tbody td:nth-child(1) {
+    grid-area: date;
+    font-size: 11px;
+    color: var(--text-secondary, #b5c0d0);
+  }
+  /* Пара */
+  #tradesTable tbody td:nth-child(2) {
+    grid-area: pair;
+    font-size: 15px;
+    font-weight: 700;
+  }
+  /* Side */
+  #tradesTable tbody td:nth-child(3) {
+    grid-area: side;
+    align-self: center;
+  }
+  #tradesTable tbody td:nth-child(3) .tag { font-size: 11px; padding: 4px 8px; }
+  /* Сетап */
+  #tradesTable tbody td:nth-child(4) {
+    grid-area: setup;
+    font-size: 11px;
+    color: var(--text-secondary, #b5c0d0);
+    margin-top: 4px;
+  }
+  /* Entry — скрываем (поместим в drawer details) */
+  #tradesTable tbody td:nth-child(5),
+  #tradesTable tbody td:nth-child(6) { display: none; }
+  /* P&L $ */
+  #tradesTable tbody td:nth-child(7) {
+    grid-area: pnl;
+    text-align: right;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+  }
+  /* P&L % */
+  #tradesTable tbody td:nth-child(8) {
+    grid-area: pct;
+    text-align: right;
+    font-size: 11px;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+  }
+  /* R */
+  #tradesTable tbody td:nth-child(9) {
+    grid-area: r;
+    text-align: right;
+    align-self: center;
+  }
+  /* Источник — скрыть */
+  #tradesTable tbody td:nth-child(10) { display: none; }
+  /* Заметка */
+  #tradesTable tbody td:nth-child(11) {
+    grid-area: note;
+    font-size: 11px;
+    color: var(--text-secondary, #b5c0d0);
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed var(--border, #1f2837);
+  }
+  #tradesTable tbody td:nth-child(11):empty { display: none; }
+  /* Actions (delete) */
+  #tradesTable tbody td:nth-child(12) {
+    grid-area: actions;
+    text-align: right;
+  }
+  
+  /* KPI strip → horizontal scroll */
+  .kpi-strip {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    grid-auto-flow: column;
+    grid-auto-columns: 80%;
+    padding-bottom: 8px;
+  }
+  .kpi-item {
+    scroll-snap-align: start;
+  }
+  
+  /* Скрыть некоторые элементы header на mobile (заменяет bottom-nav) */
+  .top-nav .nav-actions .lang-btn,
+  .top-nav .nav-actions .theme-toggle,
+  .top-nav .nav-actions .logout-link { display: none !important; }
+  
+  /* Settings/Sync уже в bottom-sheet */
+  /* Минимальный touch target для всех кликаемых */
+  .icon-btn-mini, .btn-icon-modal, .help-tip { min-width: 28px; min-height: 28px; }
+}
+
+
+/* B2 (2026-06-03): KPI sparkline + delta */
+.kpi-item {
+  position: relative;
+  overflow: hidden;
+}
+.kpi-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.kpi-delta {
+  font-size: 11px;
+  font-weight: 600;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  white-space: nowrap;
+}
+.kpi-delta.delta-up { color: #4cc28d; }
+.kpi-delta.delta-down { color: #ff6b7a; }
+.kpi-delta.delta-flat { color: var(--text-muted); }
+.kpi-delta::before {
+  display: inline-block;
+  margin-right: 2px;
+}
+.kpi-delta.delta-up::before { content: "↑"; }
+.kpi-delta.delta-down::before { content: "↓"; }
+.kpi-delta.delta-flat::before { content: "·"; }
+.kpi-spark {
+  display: block;
+  width: 100%;
+  height: 22px;
+  margin-top: 4px;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.kpi-item:hover .kpi-spark { opacity: 1; }
+.kpi-spark path { fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.kpi-spark .spark-fill { fill-opacity: 0.15; stroke: none; }
+
+
+/* B4 (2026-06-03): Command palette Cmd+K */
+.cmdk-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  z-index: 10000;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 12vh;
+}
+.cmdk-overlay[aria-hidden="false"] { display: flex; }
+.cmdk-modal {
+  width: 90%;
+  max-width: 600px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 70vh;
+}
+.cmdk-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.cmdk-icon {
+  color: var(--accent);
+  font-size: 18px;
+  font-weight: 700;
+  width: 24px;
+  text-align: center;
+}
+#cmdkInput {
+  flex: 1;
+  background: none;
+  border: 0;
+  color: var(--text-primary);
+  font-size: 15px;
+  outline: none;
+  font-family: inherit;
+}
+#cmdkInput::placeholder { color: var(--text-muted); }
+.cmdk-esc {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-family: "JetBrains Mono", monospace;
+  color: var(--text-secondary);
+}
+.cmdk-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 6px;
+}
+.cmdk-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 13.5px;
+  transition: background 0.1s;
+}
+.cmdk-item:hover, .cmdk-item.cmdk-active {
+  background: var(--bg-elev);
+}
+.cmdk-item-ico { font-size: 16px; width: 24px; text-align: center; opacity: 0.8; }
+.cmdk-item-text { flex: 1; }
+.cmdk-item-text small { display: block; color: var(--text-muted); font-size: 11px; margin-top: 2px; }
+.cmdk-item-kbd { color: var(--text-muted); font-size: 11px; font-family: monospace; }
+.cmdk-empty { padding: 28px; text-align: center; color: var(--text-muted); font-size: 13px; }
+.cmdk-section { padding: 8px 12px 4px; font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+.cmdk-footer {
+  padding: 8px 14px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.cmdk-footer kbd {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+}

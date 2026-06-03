@@ -1036,8 +1036,10 @@ def compute_goal_metrics():
 
 
 @app.route("/")
-@_login_required
 def index():
+    # B3 (2026-06-03): незалогиненным показываем landing page вместо редиректа на /auth/login
+    if not current_user.is_authenticated:
+        return render_template("landing.html")
     return render_template("index.html")
 
 
