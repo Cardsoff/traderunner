@@ -76,9 +76,24 @@ app.config['REMEMBER_COOKIE_SECURE'] = IS_PROD
 app.config['PREFERRED_URL_SCHEME'] = 'https' if IS_PROD else 'http'
 
 @app.after_request
+def _static_cache_headers(response):
+    """A4 (2026-06-03): immutable cache для /static/, 1 year max-age."""
+    from flask import request
+    path = request.path or ''
+    if path.startswith('/static/'):
+        # Версионирование через ?v=... query param → immutable
+        if request.args.get('v'):
+            response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+        else:
+            # Без версии — 1 час, must-revalidate
+            response.headers['Cache-Control'] = 'public, max-age=3600, must-revalidate'
+    return response
+
+
+@app.after_request
 def _security_headers(response):
     if IS_PROD:
-        response.headers.setdefault('Strict-Transport-Security', 'max-age=15552000; includeSubDomains')
+        response.headers.setdefault('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload')
     response.headers.setdefault('X-Frame-Options', 'DENY')
     response.headers.setdefault('X-Content-Type-Options', 'nosniff')
     response.headers.setdefault('Referrer-Policy', 'strict-origin-when-cross-origin')
@@ -96,6 +111,26 @@ def _security_headers(response):
     )
     response.headers.setdefault('Content-Security-Policy', csp)
     return response
+
+
+@app.route('/.well-known/security.txt')
+def security_txt():
+    """RFC 9116 — security disclosure policy for TradeRunner."""
+    expires = (datetime.utcnow().replace(microsecond=0)).strftime('%Y-%m-%dT%H:%M:%SZ')
+    # Expires через 1 год
+    from datetime import timedelta
+    expires = (datetime.utcnow() + timedelta(days=365)).strftime('%Y-%m-%dT%H:%M:%SZ')
+    body = f"""Contact: mailto:security@traderunner.app
+Contact: https://github.com/Cardsoff/traderunner/issues
+Expires: {expires}
+Preferred-Languages: en, ru
+Canonical: https://web-production-dbdcd.up.railway.app/.well-known/security.txt
+Policy: https://github.com/Cardsoff/traderunner/blob/main/SECURITY.md
+Acknowledgments: https://github.com/Cardsoff/traderunner#security-acknowledgments
+"""
+    from flask import Response
+    return Response(body, mimetype='text/plain')
+
 
 @app.errorhandler(Exception)
 def _global_error_handler(e):

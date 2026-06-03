@@ -148,6 +148,8 @@ async function loadAll(opts = {}) {
   _trades = trades;
   window._deposits = deposits;
   render(opts);
+
+  if (window._hideSkeleton) window._hideSkeleton();
 }
 
 function render(opts = {}) {
@@ -569,6 +571,10 @@ function renderTradesTable() {
         <div class="empty-icon">📭</div>
         <div class="empty-title">${q ? t('trades.no_match') : t('trades.no_trades')}</div>
         <div class="empty-sub">${q ? t('trades.try_other_query') : t('trades.add_hint')}</div>
+        ${q ? '' : `<div class="empty-cta">
+          <button class="btn btn-primary" onclick="document.querySelector('#syncBtn')?.click()">${t('empty.sync_bitunix')}</button>
+          <button class="btn btn-ghost" onclick="document.querySelector('#addTradeBtn')?.click()">${t('empty.add_trade_manual')}</button>
+        </div>`}
       </td></tr>`;
       renderTradesPager(0, 0, 1, 1);
       return;
@@ -680,7 +686,7 @@ function renderDepositsTable() {
 
   const body = $('#depositsBody');
   if (!arr.length) {
-    body.innerHTML = `<tr><td colspan="6" class="empty"><div class="empty-icon">💵</div><div class="empty-title">Депозитов пока нет</div><div class="empty-sub">Добавь первое пополнение</div></td></tr>`;
+    body.innerHTML = `<tr><td colspan="6" class="empty"><div class="empty-icon">💵</div><div class="empty-title">${t('empty.deposits_title')}</div><div class="empty-sub">${t('empty.deposits_sub')}</div><div class="empty-cta"><button class="btn btn-primary" onclick="document.querySelector('#addDepositBtn')?.click()">${t('empty.add_deposit')}</button></div></td></tr>`;
     return;
   }
   body.innerHTML = arr.map(d => {
@@ -735,7 +741,7 @@ function renderSetupsTab() {
   const entries = Object.entries(bySetup).sort((a,b)=>(b[1].pnl - b[1].fee) - (a[1].pnl - a[1].fee));
   const grid = $('#setupGrid');
   if (!entries.length) {
-    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;"><div class="empty-icon">🎯</div><div class="empty-title">Нет данных по сетапам</div><div class="empty-sub">Добавь сделке тэг сетапа</div></div>`;
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1;"><div class="empty-icon">🎯</div><div class="empty-title">${t('empty.setups_title')}</div><div class="empty-sub">${t('empty.setups_sub')}</div><div class="empty-cta"><button class="btn btn-primary" onclick="document.querySelector('[data-tab=\'trades\']')?.click()">${t('empty.go_tag_trades')}</button></div></div>`;
     return;
   }
   grid.innerHTML = entries.map(([name, s]) => {
@@ -3172,12 +3178,22 @@ function fireConfetti() {
     }
   }
 
-  function renderChart(candles, trade) {
+  async function renderChart(candles, trade) {
     const container = document.getElementById('tcm_chart');
     if (!container) return;
+    container.innerHTML = '<div style="padding:40px;text-align:center;color:#b5c0d0;">📈 Загружаю график…</div>';
+    // A4: lazy-load LightweightCharts при первом обращении
+    if (!window.LightweightCharts && typeof window.loadLightweightCharts === 'function') {
+      try {
+        await window.loadLightweightCharts();
+      } catch(e) {
+        container.innerHTML = '<div style="padding:40px;text-align:center;color:#ff6b7a;">График недоступен (CDN заблокирован?)</div>';
+        return;
+      }
+    }
     container.innerHTML = '';
     if (!window.LightweightCharts) {
-      container.innerHTML = '<div style="padding:40px;text-align:center;color:#8a96a8;">LightweightCharts CDN не загрузился</div>';
+      container.innerHTML = '<div style="padding:40px;text-align:center;color:#b5c0d0;">LightweightCharts CDN не загрузился</div>';
       return;
     }
     _chart = window.LightweightCharts.createChart(container, {
@@ -3736,7 +3752,10 @@ function fireConfetti() {
       const d = await r.json();
       if (!r.ok || !d.ok) return;
       if (d.total_trades < 10 || !d.grid.length) {
-        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text-secondary);font-size:12px;">' + (window.t ? t('heatmap.no_data') : 'Not enough data') + '</div>';
+        const totalTr = (d.total_trades || 0);
+        const need = 50;
+        const pct = Math.min(100, Math.round(totalTr / need * 100));
+        grid.innerHTML = `<div class="empty" style="grid-column:1/-1;"><div class="empty-icon">📊</div><div class="empty-title">${window.t ? t('empty.heatmap_title') : 'Heatmap собираем'}</div><div class="empty-sub">${window.t ? t('empty.heatmap_sub').replace('{0}', totalTr).replace('{1}', need) : `Соберём ${need} сделок — покажем твои best hours. Сейчас: ${totalTr}/${need}`}</div><div style="margin-top:10px;width:200px;height:6px;background:var(--bg-elev);border-radius:3px;margin-left:auto;margin-right:auto;overflow:hidden;"><div style="height:100%;background:var(--accent);width:${pct}%;transition:width 0.6s ease;"></div></div></div>`;
         return;
       }
       const isEn = (window.i18n && window.i18n.getLang() === 'en');
@@ -3837,4 +3856,86 @@ function fireConfetti() {
       if (ev.key === 'Escape') { ev.preventDefault(); cancel(); }
     });
   }, true);  // capture phase — чтобы перехватить до открытия модалки графика
+})();
+
+
+// A5 (2026-06-03): inline ? help-tips — hover/tap показывает popover
+(function() {
+  let _hp = null;
+  function showHelp(target) {
+    const key = target.dataset.tipKey;
+    if (!key) return;
+    const text = (window.t && window.t(key)) || key;
+    // Парсим: "Title|Formula|Body" (с разделителем `|`)
+    const parts = text.split('|');
+    const title = parts[0] || '';
+    const formula = parts.length > 2 ? parts[1] : '';
+    const body = parts.length > 2 ? parts[2] : (parts[1] || '');
+    
+    hideHelp();
+    _hp = document.createElement('div');
+    _hp.className = 'help-popover';
+    let html = '';
+    if (title) html += '<div class="hp-title">' + title + '</div>';
+    if (body) html += body;
+    if (formula) html += '<code class="hp-formula">' + formula + '</code>';
+    _hp.innerHTML = html;
+    document.body.appendChild(_hp);
+    const rect = target.getBoundingClientRect();
+    const popRect = _hp.getBoundingClientRect();
+    let left = rect.left + rect.width / 2 - popRect.width / 2;
+    let top = rect.bottom + 8;
+    if (left < 8) left = 8;
+    if (left + popRect.width > window.innerWidth - 8) left = window.innerWidth - popRect.width - 8;
+    if (top + popRect.height > window.innerHeight - 8) top = rect.top - popRect.height - 8;
+    _hp.style.left = (left + window.scrollX) + 'px';
+    _hp.style.top = (top + window.scrollY) + 'px';
+    requestAnimationFrame(() => _hp.classList.add('show'));
+  }
+  function hideHelp() {
+    if (_hp) { _hp.remove(); _hp = null; }
+  }
+  document.addEventListener('mouseover', e => {
+    const t = e.target.closest('.help-tip');
+    if (t) showHelp(t);
+  });
+  document.addEventListener('mouseout', e => {
+    if (e.target.closest('.help-tip')) hideHelp();
+  });
+  // Mobile: tap toggles
+  document.addEventListener('click', e => {
+    const t = e.target.closest('.help-tip');
+    if (t) {
+      e.stopPropagation();
+      if (_hp) hideHelp(); else showHelp(t);
+    } else if (_hp) {
+      hideHelp();
+    }
+  }, true);
+})();
+
+
+// A6 (2026-06-03): Skeleton screens — добавить класс при загрузке, убрать после первого loadAll
+(function() {
+  if (document.body) {
+    document.body.classList.add('skel-loading');
+  } else {
+    document.addEventListener('DOMContentLoaded', () => document.body.classList.add('skel-loading'));
+  }
+  // Слушатель — после первого успешного loadAll убираем skeleton
+  let _removed = false;
+  function removeSkel() {
+    if (_removed) return;
+    _removed = true;
+    const host = document.getElementById('skelHost');
+    if (host) host.classList.add('skel-fade');
+    setTimeout(() => {
+      document.body.classList.remove('skel-loading');
+      if (host) host.style.display = 'none';
+    }, 400);
+  }
+  // Хук на window — будем вызывать из loadAll по факту первого рендера
+  window._hideSkeleton = removeSkel;
+  // Fallback: если loadAll не вызовется через 5 секунд — убираем skeleton
+  setTimeout(removeSkel, 5000);
 })();

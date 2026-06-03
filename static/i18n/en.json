@@ -458,5 +458,26 @@
     "best": "Best window",
     "worst": "Worst window",
     "no_data": "Not enough data for heatmap (need 10+ trades)"
+  },
+  "empty": {
+    "sync_bitunix": "🔄 Sync Bitunix",
+    "add_trade_manual": "+ Add manually",
+    "deposits_title": "No deposits yet",
+    "deposits_sub": "Track deposits and withdrawals for accurate PnL",
+    "add_deposit": "+ Add deposit",
+    "setups_title": "No setup data yet",
+    "setups_sub": "A setup is your trading idea with rules. Tag your trades to see winrate per strategy",
+    "go_tag_trades": "→ Go to trades",
+    "heatmap_title": "Building heatmap…",
+    "heatmap_sub": "Collect {1} trades to see your best hours. Now: {0}/{1}"
+  },
+  "help": {
+    "net_pnl": "Net P&L|Profit − Loss − Fees|Net profit for the active goal period. Losses and fees are subtracted from gross profit.",
+    "winrate": "Winrate|wins / (wins + losses)|Share of winning trades. Break-even excluded. Norm: scalping 40-60%, swing 30-50%.",
+    "profit_factor": "Profit Factor|gross profit / gross loss|Ratio of total profits to total losses. >1.5 — good, >2.0 — excellent, <1.0 — losing strategy.",
+    "max_dd": "Maximum Drawdown|peak − trough|Largest drop from equity peak to trough. Shows the worst moment. >20% is critical.",
+    "r_multiple": "R-multiple|(exit − entry) / |entry − SL||Win in risk units. +1R = win equals risk taken. Green ≥+1R, red <0. To see a value — set Stop-Loss by clicking the «—».",
+    "tiltmeter": "Tiltmeter|0..100, aggregate|Risk indicator: revenge trades, size-up after loss, losing streak. >70 — pause recommended.",
+    "goal_progress": "Goal progress|capital / target × 100%|Percent of target reached. Checkpoints at 25/50/75% mark milestones."
   }
 }

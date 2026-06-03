@@ -3,7 +3,7 @@
   color-scheme: dark;
   --bg-base: #0a0d14; --bg-elev: #11151f; --bg-card: #161b27; --bg-card-hi: #1b2130;
   --border: #232a3b; --border-hi: #2d3548;
-  --text-primary: #e6edf7; --text-secondary: #8a93a8; --text-muted: #5a6478;
+  --text-primary: #e6edf7; --text-secondary: #b5c0d0; --text-muted: #5a6478;
   --accent: #7c5cff; --accent-2: #4ea1ff;
   --accent-grad: linear-gradient(135deg, #7c5cff 0%, #4ea1ff 100%);
   --green: #10c98a; --green-bg: rgba(16,201,138,0.12);
@@ -1969,4 +1969,78 @@ tr[data-trade-row="1"].kbd-focus {
   color: var(--text);
   font-size: 12px;
   font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+
+
+/* A2 (2026-06-03): empty-state CTAs */
+.empty-cta {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.empty-cta .btn { min-width: 140px; }
+
+
+/* A5 (2026-06-03): inline ? help tooltips для терминов */
+.help-tip {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  line-height: 13px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  cursor: help;
+  margin-left: 4px;
+  vertical-align: middle;
+  transition: all 0.15s ease;
+  font-family: -apple-system, sans-serif;
+}
+.help-tip:hover {
+  color: var(--text-primary);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.help-popover {
+  position: absolute;
+  z-index: 9999;
+  background: var(--bg-card-hi, #14202d);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  max-width: 280px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.help-popover.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.help-popover .hp-title {
+  font-weight: 600;
+  color: var(--accent);
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+.help-popover .hp-formula {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--text-secondary);
+  background: rgba(255,255,255,0.04);
+  padding: 4px 6px;
+  border-radius: 3px;
+  margin-top: 6px;
+  display: block;
 }
