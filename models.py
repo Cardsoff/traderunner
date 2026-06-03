@@ -79,6 +79,8 @@ class Trade(db.Model):
     funding_usd = Column(Float, nullable=False, default=0)
     note        = Column(Text, default="")
     source      = Column(String(30), nullable=False, default="manual")
+    # B2 (2026-06-02): stop-loss для R-multiple
+    stop_loss   = Column(Float)
 
     __table_args__ = (
         UniqueConstraint("user_id", "external_id", name="uix_user_external"),
