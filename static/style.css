@@ -1942,3 +1942,31 @@ tr[data-trade-row="1"].kbd-focus {
   margin-top: 10px;
 }
 .hl-cell { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+
+/* B2 (2026-06-02): R-multiple колонка */
+.r-badge {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.r-good { background: rgba(76,194,141,0.15); color: #4cc28d; }
+.r-meh  { background: rgba(138,150,168,0.12); color: #a8b4c8; }
+.r-bad  { background: rgba(255,107,122,0.12); color: #ff6b7a; }
+.r-neutral { color: var(--muted); }
+.r-empty { font-size: 13px; }
+.trade-r-cell { cursor: pointer; }
+.trade-r-cell:hover { background: rgba(90,155,224,0.06); }
+.trade-r-cell input.sl-edit {
+  width: 100%; max-width: 90px;
+  padding: 3px 6px;
+  background: var(--bg);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 12px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+}

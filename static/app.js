@@ -501,6 +501,21 @@ function applyFilterBar(items, opts) {
   return out;
 }
 
+// B2 (2026-06-02): R-multiple cell renderer
+function renderR(t) {
+  const r = t.r_multiple;
+  if (r == null || r === undefined) {
+    return '<span class="muted r-empty">—</span>';
+  }
+  let cls = 'r-neutral';
+  if (r >= 1) cls = 'r-good';
+  else if (r > 0) cls = 'r-meh';
+  else if (r < 0) cls = 'r-bad';
+  const sign = r > 0 ? '+' : '';
+  return `<span class="r-badge ${cls}">${sign}${r.toFixed(2)}R</span>`;
+}
+
+
 function renderTradesTable() {
   try {
     const searchEl = document.getElementById('tradeSearch');
@@ -550,7 +565,7 @@ function renderTradesTable() {
     const body = $('#tradesBody');
     if (!body) return;
     if (!arr.length) {
-      body.innerHTML = `<tr><td colspan="11" class="empty">
+      body.innerHTML = `<tr><td colspan="12" class="empty">
         <div class="empty-icon">📭</div>
         <div class="empty-title">${q ? t('trades.no_match') : t('trades.no_trades')}</div>
         <div class="empty-sub">${q ? t('trades.try_other_query') : t('trades.add_hint')}</div>
@@ -583,12 +598,13 @@ function renderTradesTable() {
           <td class="cell-num">${t.exit_price?(+t.exit_price).toFixed(2):'—'}</td>
           <td class="cell-num ${cls}">${fmtMoney(pnl,2)}</td>
           <td class="cell-num ${cls}">${(+t.pnl_pct||0).toFixed(2)}%</td>
+          <td class="cell-num trade-r-cell" data-trade-id="${t.id}" data-current-sl="${t.stop_loss==null?'':t.stop_loss}" title="Клик чтобы задать Stop-Loss">${renderR(t)}</td>
           <td>${srcTag}</td>
           <td class="trade-note-cell" data-trade-id="${t.id}" title="Двойной клик чтобы редактировать">${esc(t.note)}</td>
           <td><button class="icon-btn-mini" data-del-trade="${t.id}" title="Удалить">✕</button></td>
         </tr>`;
       } catch (e) {
-        return `<tr><td colspan="11" class="muted">(битая строка #${t && t.id})</td></tr>`;
+        return `<tr><td colspan="12" class="muted">(битая строка #${t && t.id})</td></tr>`;
       }
     }).join('');
 
@@ -1200,7 +1216,7 @@ $('#completeGoalBtn').addEventListener('click', async () => {
 
 $('#addTradeBtn').addEventListener('click', () => openTradeModal());
 function openTradeModal() {
-  ['tradeSymbol','tradeEntry','tradeExit','tradeQty','tradePnl','tradeFee','tradeNote'].forEach(id => $('#'+id).value = '');
+  ['tradeSymbol','tradeEntry','tradeExit','tradeQty','tradePnl','tradeFee','tradeNote','tradeStop'].forEach(id => $('#'+id).value = '');
   $('#tradeSetup').value = '';
   // BUG-23: локальное datetime, не UTC
   (function setLocalTs() {
@@ -1228,6 +1244,7 @@ $('#saveTradeBtn').addEventListener('click', async () => {
     qty, pnl_usd: pnl,
     pnl_pct: entry && qty ? pnl/(entry*qty)*100 : 0,
     fee_usd: +$('#tradeFee').value || 0,
+    stop_loss: $('#tradeStop').value.trim() || null,
     note: $('#tradeNote').value.trim(), source: 'manual',
   });
   $('#tradeModal').classList.remove('open');
@@ -3767,4 +3784,57 @@ function fireConfetti() {
       };
     }
   }
+})();
+
+
+// B2 (2026-06-02): inline-edit Stop-Loss по клику на R-ячейку
+(function() {
+  document.addEventListener('click', e => {
+    const td = e.target.closest('.trade-r-cell');
+    if (!td) return;
+    // Если уже редактируется — не открывать второй input
+    if (td.querySelector('input.sl-edit')) return;
+    e.stopPropagation();  // чтобы не открывалась модалка с графиком
+    const tradeId = td.dataset.tradeId;
+    if (!tradeId) return;
+    const oldSL = td.dataset.currentSl || '';
+    const oldHTML = td.innerHTML;
+    const inp = document.createElement('input');
+    inp.type = 'number';
+    inp.step = 'any';
+    inp.className = 'sl-edit';
+    inp.placeholder = 'SL';
+    inp.value = oldSL;
+    td.innerHTML = '';
+    td.appendChild(inp);
+    inp.focus();
+    inp.select();
+    let saving = false;
+    const cancel = () => { td.innerHTML = oldHTML; };
+    const save = async () => {
+      if (saving) return;
+      saving = true;
+      const newSL = inp.value.trim();
+      if (newSL === oldSL) { cancel(); return; }
+      try {
+        await fetch('/api/trades/' + tradeId, {
+          method: 'PATCH',
+          headers: {'Content-Type':'application/json'},
+          credentials: 'include',
+          body: JSON.stringify({ stop_loss: newSL === '' ? null : parseFloat(newSL) }),
+        });
+        // Перезагружаем все данные — R пересчитан на сервере
+        if (typeof loadAll === 'function') await loadAll();
+        if (typeof toast === 'function') toast('✓ SL обновлён, R пересчитан', 'success', 1500);
+      } catch (err) {
+        cancel();
+        if (typeof toast === 'function') toast('✗ Не удалось обновить SL', 'error');
+      }
+    };
+    inp.addEventListener('blur', save);
+    inp.addEventListener('keydown', ev => {
+      if (ev.key === 'Enter') { ev.preventDefault(); inp.blur(); }
+      if (ev.key === 'Escape') { ev.preventDefault(); cancel(); }
+    });
+  }, true);  // capture phase — чтобы перехватить до открытия модалки графика
 })();

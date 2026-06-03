@@ -334,14 +334,15 @@ def add_trade(trade: dict, user_id: int = None):
         conn.execute(
             "INSERT OR IGNORE INTO trades "
             "(external_id, ts, symbol, side, setup, entry_price, exit_price, qty, "
-            " pnl_usd, pnl_pct, fee_usd, funding_usd, note, source, user_id) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            " pnl_usd, pnl_pct, fee_usd, funding_usd, note, source, user_id, stop_loss) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 ext_id, trade["ts"], trade["symbol"], trade["side"],
                 trade.get("setup"), trade.get("entry_price"), trade.get("exit_price"),
                 trade.get("qty"), trade.get("pnl_usd", 0), trade.get("pnl_pct", 0),
                 trade.get("fee_usd", 0), trade.get("funding_usd", 0),
                 trade.get("note", ""), trade.get("source", "manual"), uid,
+                trade.get("stop_loss"),  # B2: NULL если не указан
             ),
         )
 
@@ -363,8 +364,18 @@ def delete_trade(trade_id: int, user_id: int = None):
 
 def update_trade_fields(trade_id: int, fields: dict, user_id: int = None):
     uid = _current_user_id(user_id)
-    allowed = {"note", "setup"}
+    allowed = {"note", "setup", "stop_loss"}  # B2: SL редактируется inline
     upd = {k: v for k, v in fields.items() if k in allowed}
+    # B2: stop_loss пустая строка → NULL, число → float
+    if "stop_loss" in upd:
+        v = upd["stop_loss"]
+        if v == "" or v is None:
+            upd["stop_loss"] = None
+        else:
+            try:
+                upd["stop_loss"] = float(v)
+            except Exception:
+                upd.pop("stop_loss")
     if not upd:
         return
     parts = ", ".join(f"{k}=?" for k in upd)

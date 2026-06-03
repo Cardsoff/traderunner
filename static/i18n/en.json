@@ -100,7 +100,8 @@
     "add_hint": "Click «+ Trade» or Sync with the exchange",
     "filter_all_n": "All ({0})",
     "pagination_full": "Showing {0} of {1}",
-    "pagination_paged": "Showing {0} of {1} (page {2} / {3})"
+    "pagination_paged": "Showing {0} of {1} (page {2} / {3})",
+    "col_r": "R"
   },
   "chart": {
     "loading": "Loading candles…",
@@ -292,7 +293,9 @@
     "none": "— none —",
     "fee": "Fee $",
     "note": "Note",
-    "add_title": "New trade"
+    "add_title": "New trade",
+    "sl": "Stop-Loss",
+    "sl_optional": "(optional, for R)"
   },
   "deposit_form": {
     "date": "Date",

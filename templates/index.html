@@ -340,6 +340,7 @@
             <th class="sortable" data-sort="exit_price">Exit <span class="sort-arrow">▼</span></th>
             <th class="sortable" data-sort="pnl_usd">P&L $ <span class="sort-arrow">▼</span></th>
             <th class="sortable" data-sort="pnl_pct">P&L % <span class="sort-arrow">▼</span></th>
+            <th class="sortable" data-sort="r_multiple" title="R = profit / risk (по Stop-Loss). Клик по ячейке — задать SL."><span data-i18n="trades.col_r">R</span> <span class="sort-arrow">▼</span></th>
             <th data-i18n="trades.col_source">Источник</th><th data-i18n="trades.col_note">Заметка</th><th></th>
           </tr></thead>
           <tbody id="tradesBody"></tbody>
@@ -479,6 +480,7 @@
     <div class="form-row"><label data-i18n="trade_form.setup">Сетап</label><select id="tradeSetup"><option value="" data-i18n="trade_form.none">— нет —</option></select></div>
     <div class="form-row"><label>Entry</label><input type="number" step="any" id="tradeEntry" /></div>
     <div class="form-row"><label>Exit</label><input type="number" step="any" id="tradeExit" /></div>
+    <div class="form-row"><label data-i18n="trade_form.sl">Stop-Loss <span style="color:var(--muted);font-weight:400;font-size:11px;" data-i18n="trade_form.sl_optional">(опционально, для R)</span></label><input type="number" step="any" id="tradeStop" placeholder="напр. 49500" /></div>
     <div class="form-row"><label>Qty</label><input type="number" step="any" id="tradeQty" /></div>
     <div class="form-row"><label>P&L $</label><input type="number" step="any" id="tradePnl" /></div>
     <div class="form-row"><label data-i18n="trade_form.fee">Комиссия $</label><input type="number" step="any" id="tradeFee" /></div>

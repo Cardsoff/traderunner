@@ -214,6 +214,8 @@ with app.app_context():
         _ensure_column("users", "email_verification_sent_at", "DATETIME", "")
         _ensure_column("users", "is_blocked", "BOOLEAN", "NOT NULL DEFAULT 0")
         _ensure_column("users", "lang", "VARCHAR(8)", "NOT NULL DEFAULT 'ru'")
+        # B2 (2026-06-02): stop_loss для R-multiple
+        _ensure_column("trades", "stop_loss", "REAL", "")
     except Exception as _e:
         app.logger.error(f"❌ auto-migration failed: {_e}")
 
@@ -1123,6 +1125,38 @@ def api_setup_delete(name):
     return jsonify(db.list_setups())
 
 
+# B2 (2026-06-02): R-multiple = profit / |entry-SL| с учётом стороны.
+# None если SL пуст / по неправильной стороне / цены не заданы.
+def _compute_r_multiple(t):
+    try:
+        sl = t.get("stop_loss")
+        ep = t.get("entry_price")
+        xp = t.get("exit_price")
+        side = (t.get("side") or "").upper()
+        if sl is None or ep is None or xp is None:
+            return None
+        sl = float(sl); ep = float(ep); xp = float(xp)
+        if side == "LONG":
+            risk = ep - sl
+            if risk <= 0:
+                return None
+            return round((xp - ep) / risk, 2)
+        elif side == "SHORT":
+            risk = sl - ep
+            if risk <= 0:
+                return None
+            return round((ep - xp) / risk, 2)
+        return None
+    except Exception:
+        return None
+
+
+def _enrich_trades_with_r(trades):
+    for t in trades:
+        t["r_multiple"] = _compute_r_multiple(t)
+    return trades
+
+
 @app.route("/api/trades", methods=["GET", "POST"])
 @_login_required
 def api_trades():
@@ -1130,12 +1164,24 @@ def api_trades():
         payload = request.get_json(force=True) or {}
         if "ts" not in payload:
             payload["ts"] = datetime.utcnow().isoformat(timespec="seconds")
+        # B2: stop_loss "" → None, "123.4" → float
+        if "stop_loss" in payload:
+            sl_v = payload["stop_loss"]
+            if sl_v == "" or sl_v is None:
+                payload["stop_loss"] = None
+            else:
+                try:
+                    payload["stop_loss"] = float(sl_v)
+                except Exception:
+                    payload["stop_loss"] = None
         db.add_trade(payload)
         return jsonify({"ok": True})
     start_dt, end_dt = _scope_from_request(request)
     trades = db.list_trades()
     if start_dt or end_dt:
         trades = _filter_by_scope(trades, start_dt, end_dt)
+    # B2: добавить r_multiple каждой сделке
+    _enrich_trades_with_r(trades)
     # #29 pagination: ?limit=100&offset=0 (опционально)
     try:
         limit = int(request.args.get("limit") or 0)

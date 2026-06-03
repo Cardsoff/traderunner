@@ -100,7 +100,8 @@
     "add_hint": "Жми «+ Сделка» или Sync с биржей",
     "filter_all_n": "Все ({0})",
     "pagination_full": "Показано {0} из {1}",
-    "pagination_paged": "Показано {0} из {1} (стр. {2} / {3})"
+    "pagination_paged": "Показано {0} из {1} (стр. {2} / {3})",
+    "col_r": "R"
   },
   "chart": {
     "loading": "Загружаю свечи…",
@@ -292,7 +293,9 @@
     "none": "— нет —",
     "fee": "Комиссия $",
     "note": "Заметка",
-    "add_title": "Новая сделка"
+    "add_title": "Новая сделка",
+    "sl": "Stop-Loss",
+    "sl_optional": "(опционально, для R)"
   },
   "deposit_form": {
     "date": "Дата",
